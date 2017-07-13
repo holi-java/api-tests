@@ -1,1 +1,9 @@
 ext.spring_version = '4.3.9.RELEASE'
+
+String spring(module) { return "org.springframework:spring-$module:$spring_version" }
+
+subprojects {
+    dependencies {
+        testCompile spring("test")
+    }
+}

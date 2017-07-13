@@ -1,3 +1,5 @@
 rootProject.name = 'api-tests'
-include ':spring'
+include ':spring', ':spring:spring-core'
+include ':jdk'
+include ':testing'
 

@@ -10,11 +10,17 @@ buildscript {
     }
 }
 
+
 allprojects { current ->
+
     group 'com.holi'
-    version '1.0'
+    version '1.0';
 
     if (current.subprojects) return
+
+    ext {
+        hamcrestLib = 'org.hamcrest:java-hamcrest:2.0.0.0'
+    }
 
     apply plugin: 'java'
     apply plugin: 'kotlin'
@@ -23,6 +29,7 @@ allprojects { current ->
     targetCompatibility = 1.8
 
     repositories {
+        maven { url "http://repo.spring.io/milestone/" }
         maven { url 'http://dl.bintray.com/kotlin/kotlin-eap-1.2' }
         maven { url "http://maven.aliyun.com/nexus/content/groups/public" }
     }
@@ -34,9 +41,10 @@ allprojects { current ->
         testCompile('junit:junit:4.12') {
             exclude group: 'org.hamcrest'
         }
-        testCompile 'org.hamcrest:java-hamcrest:2.0.0.0'
+        testCompile hamcrestLib
         testCompile 'com.winterbe:expekt:0.5.0'
         testCompile 'com.natpryce:hamkrest:1.4.1.0'
+        testCompile project(":testing")
     }
 
     compileKotlin {
