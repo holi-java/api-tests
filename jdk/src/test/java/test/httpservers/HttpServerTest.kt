@@ -17,7 +17,7 @@ private const val HOST_NAME = "127.0.0.1"
 
 class HttpServerTest {
 
-    val server = HttpServer.create(InetSocketAddress(HOST_NAME, SERVER_PORT), 0).apply {
+    val server = HttpServer.create(InetSocketAddress(HOST_NAME, SERVER_PORT), 0)!!.apply {
         createContext("/").setHandler {
             try {
                 it.sendResponseHeaders(200, 0)
