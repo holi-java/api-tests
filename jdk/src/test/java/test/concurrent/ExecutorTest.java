@@ -5,9 +5,11 @@ import org.junit.Test;
 import java.util.Set;
 import java.util.concurrent.*;
 
+import static com.holi.utils.Tasks.delayed;
 import static java.util.concurrent.Executors.newFixedThreadPool;
 import static java.util.concurrent.TimeUnit.*;
 import static org.hamcrest.Matchers.*;
+import static org.hamcrest.matchers.ExceptionMatchers.throwing;
 import static org.junit.Assert.assertThat;
 
 @SuppressWarnings("WeakerAccess")
@@ -33,6 +35,17 @@ public class ExecutorTest {
         assertThat(queue.take(), in(created));
         assertThat(queue.take(), in(created));
         assertThat(queue.poll(100, MILLISECONDS), is(nullValue()));
+    }
+
+    @Test
+    public void executesFutureTask() throws Throwable {
+        int IMMEDIATELY = 0;
+        FutureTask<Integer> task = new FutureTask<>(delayed(() -> 1));
+
+        executor.execute(task);
+
+        assertThat(() -> task.get(IMMEDIATELY, MILLISECONDS), throwing(TimeoutException.class));
+        assertThat(task.get(), equalTo(1));
     }
 
     private Runnable collectWorkingThread(BlockingQueue<Thread> queue) {
