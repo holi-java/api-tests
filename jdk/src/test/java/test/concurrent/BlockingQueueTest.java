@@ -1,6 +1,5 @@
 package test.concurrent;
 
-import com.holi.utils.Execution;
 import com.holi.utils.Task;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -13,8 +12,10 @@ import java.util.NoSuchElementException;
 import java.util.concurrent.*;
 import java.util.function.IntFunction;
 
-import static com.holi.utils.Execution.await;
+import static com.holi.utils.ExConsumer.blocking;
+import static com.holi.utils.Task.delay;
 import static com.holi.utils.Task.spawn;
+import static com.holi.utils.Task.task;
 import static java.util.Arrays.asList;
 import static java.util.concurrent.TimeUnit.DAYS;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
@@ -64,7 +65,7 @@ public class BlockingQueueTest {
 
     @Test
     public void pollDonotBlockingToWaitingTheResult() throws Throwable {
-        Future<?> task = Task.delay(() -> queue.add(1));
+        Future<?> task = delay(() -> queue.add(1));
 
         assertThat(queue.poll(), is(nullValue()));
 
@@ -74,14 +75,14 @@ public class BlockingQueueTest {
 
     @Test
     public void takeWillBlockingToWaitingTheResult() throws Throwable {
-        Task.delay(() -> queue.add(2));
+        delay(() -> queue.add(2));
 
         assertThat(queue.take(), equalTo(2));
     }
 
     @Test(timeout = 200)
     public void pollWaitUntilQueueIsNotEmpty() throws Throwable {
-        Task.delay(() -> queue.add(2));
+        delay(() -> queue.add(2));
 
         assertThat(queue.poll(1, DAYS), equalTo(2));
     }
@@ -101,7 +102,7 @@ public class BlockingQueueTest {
         fill(queue);
         CountDownLatch blocking = new CountDownLatch(1);
 
-        spawn(Execution.releasingBefore(blocking, () -> queue.put(2)));
+        spawn(task(blocking::countDown).then(() -> queue.put(2)));
 
         blocking.await();
 
@@ -119,11 +120,13 @@ public class BlockingQueueTest {
 
     @Test
     public void cancel() throws Throwable {
-        Execution.blocking(it -> spawn(await(it, () -> queue.add(1))).cancel(true));
+        blocking(it -> {
+            spawn(task(it::await).then(() -> queue.add(1))).cancel(true);
 
-        Integer value = queue.poll(200, MILLISECONDS);
+            Integer value = queue.poll(200, MILLISECONDS);
 
-        assertThat(value, anyOf(is(1), nullValue()));
+            assertThat(value, anyOf(is(1), nullValue()));
+        });
     }
 
 

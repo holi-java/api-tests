@@ -7,6 +7,24 @@ public interface Task {
 
     ExecutorService EXECUTOR = Executors.newWorkStealingPool(20);
 
+    static Task task(Task task) {
+        return task;
+    }
+
+    default Task then(Task task) {
+        return () -> {
+            run();
+            task.run();
+        };
+    }
+
+    default Task after(Task task) {
+        return () -> {
+            task.run();
+            run();
+        };
+    }
+
     void run() throws Exception;
 
     static <T> Future<T> delay(Callable<T> task) {

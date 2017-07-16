@@ -1,12 +1,12 @@
 package test.concurrent;
 
+import com.holi.utils.Task;
 import org.junit.Test;
 
 import java.util.concurrent.LinkedTransferQueue;
 import java.util.concurrent.TransferQueue;
 
-import static com.holi.utils.Execution.releasingAfter;
-import static com.holi.utils.Execution.blocking;
+import static com.holi.utils.ExConsumer.blocking;
 import static com.holi.utils.Task.*;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.hamcrest.Matchers.equalTo;
@@ -18,7 +18,7 @@ public class TransferQueueTest {
     @Test
     public void transferWaitingForReceiptUntilElementWasConsumed() throws Throwable {
         blocking(it -> {
-            spawn(releasingAfter(it, () -> queue.transfer(1)));
+            spawn(task(() -> queue.transfer(1)).then(it::countDown));
             assertFalse(it.await(100, MILLISECONDS));
 
             assertThat(queue.take(), equalTo(1));
