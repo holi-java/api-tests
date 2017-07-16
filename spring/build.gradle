@@ -1,6 +1,11 @@
-ext.spring_version = '4.3.9.RELEASE'
+ext {
+    spring_version = '4.3.9.RELEASE'
+    spring_boot_version = '1.5.4.RELEASE'
+}
 
 String spring(module) { return "org.springframework:spring-$module:$spring_version" }
+
+String springBoot(module) { return "org.springframework.boot:spring-boot-$module:$spring_boot_version" }
 
 subprojects {
     dependencies {
