@@ -11,17 +11,15 @@ buildscript {
 }
 
 
-allprojects { current ->
-
+allprojects {
     group 'com.holi'
     version '1.0';
 
-    if (current.subprojects) return
 
-    ext {
-        hamcrestLib = 'org.hamcrest:java-hamcrest:2.0.0.0'
-    }
+    if (subprojects) return
 
+
+    apply from: "$rootDir/dependencies.gradle"
     apply plugin: 'java'
     apply plugin: 'kotlin'
 

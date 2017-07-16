@@ -1,0 +1,10 @@
+subprojects {
+    dependencies {
+        testCompile spring('test')
+        testCompile spring('orm')
+        testCompile spring('context')
+        testCompile hibernate('testing')
+        testCompile hibernate('validator')
+        testCompile 'org.hsqldb:hsqldb:2.4.0'
+    }
+}
