@@ -1,5 +1,6 @@
 package test.concurrent;
 
+import com.holi.utils.Execution;
 import com.holi.utils.Task;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -12,7 +13,7 @@ import java.util.NoSuchElementException;
 import java.util.concurrent.*;
 import java.util.function.IntFunction;
 
-import static com.holi.utils.Task.await;
+import static com.holi.utils.Execution.await;
 import static com.holi.utils.Task.spawn;
 import static java.util.Arrays.asList;
 import static java.util.concurrent.TimeUnit.DAYS;
@@ -100,7 +101,7 @@ public class BlockingQueueTest {
         fill(queue);
         CountDownLatch blocking = new CountDownLatch(1);
 
-        spawn(Task.releasing(blocking, () -> queue.put(2)));
+        spawn(Execution.releasingBefore(blocking, () -> queue.put(2)));
 
         blocking.await();
 
@@ -118,7 +119,7 @@ public class BlockingQueueTest {
 
     @Test
     public void cancel() throws Throwable {
-        Task.blocking(it -> spawn(await(it, () -> queue.add(1))).cancel(true));
+        Execution.blocking(it -> spawn(await(it, () -> queue.add(1))).cancel(true));
 
         Integer value = queue.poll(200, MILLISECONDS);
 
