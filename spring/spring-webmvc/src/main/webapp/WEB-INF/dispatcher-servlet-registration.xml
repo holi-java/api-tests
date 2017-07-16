@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+               http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <bean class="org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping">
+        <property name="defaultHandler">
+            <bean class="org.springframework.web.servlet.resource.DefaultServletHttpRequestHandler"/>
+        </property>
+    </bean>
+
+    <bean class="org.springframework.web.servlet.handler.SimpleUrlHandlerMapping">
+        <property name="order" value="#{T(Integer).MAX_VALUE - 1}"/>
+        <property name="urlMap">
+            <map>
+                <entry key="/resources/**">
+                    <bean class="org.springframework.web.servlet.resource.ResourceHttpRequestHandler">
+                        <property name="locations">
+                            <list>
+                                <value>/res/</value>
+                            </list>
+                        </property>
+                    </bean>
+                </entry>
+            </map>
+        </property>
+    </bean>
+</beans>
