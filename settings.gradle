@@ -3,4 +3,5 @@ include ':spring', ':spring:spring-core', ':spring:spring-webmvc'
 include ':jdk'
 include ':testing'
 include ':rx-java2'
+include ':kotlin'
 
