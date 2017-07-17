@@ -23,8 +23,6 @@ import org.springframework.test.context.ContextConfiguration
 import org.springframework.test.context.junit4.SpringRunner
 import org.springframework.transaction.annotation.EnableTransactionManagement
 import org.springframework.transaction.annotation.Transactional
-import java.io.PrintWriter
-import java.io.StringWriter
 import java.util.*
 import javax.persistence.Column
 import javax.persistence.Entity
@@ -100,13 +98,13 @@ open class DDLAutoGenerationTest {
 class Constraints(
         @Id val id: Int,
         @field:[NullOrNotBlank Size(max = 50)] @Column(nullable = true) var not_blank: String? = null,
-        @field:[NullOrLengthGT1 Size(max = 50)] @Column(nullable = true) var not_empty: String? = null
+        @field:[NullOrNotEmpty Size(max = 50)] @Column(nullable = true) var not_empty: String? = null
 )
 
 @[ConstraintComposition(OR) Length(min = 1) Null]
 @ReportAsSingleViolation
 @Constraint(validatedBy = emptyArray())
-annotation class NullOrLengthGT1(
+annotation class NullOrNotEmpty(
         val message: String = "{org.hibernate.validator.constraints.test.NullOrNotBlank.message}",
         val groups: Array<KClass<*>> = emptyArray(),
         val payload: Array<KClass<out Payload>> = emptyArray()
