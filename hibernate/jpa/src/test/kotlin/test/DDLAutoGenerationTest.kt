@@ -1,17 +1,17 @@
-@file:Suppress("SpringKotlinAutowiring", "MemberVisibilityCanPrivate", "ReplaceArrayOfWithLiteral")
+@file:Suppress("SpringKotlinAutowiring", "MemberVisibilityCanPrivate", "EXPERIMENTAL_FEATURE_WARNING")
 
 package test
 
-import test.DDLAutoGenerationTest.Config
-import com.natpryce.hamkrest.assertion.assert
-import com.natpryce.hamkrest.present
 import org.hibernate.SessionFactory
 import org.hibernate.cfg.Environment.HBM2DDL_AUTO
 import org.hibernate.cfg.Environment.SHOW_SQL
-import org.hibernate.validator.constraints.*
-import org.hibernate.validator.constraints.CompositionType.*
+import org.hibernate.validator.constraints.CompositionType.OR
+import org.hibernate.validator.constraints.ConstraintComposition
+import org.hibernate.validator.constraints.Length
+import org.hibernate.validator.constraints.NotBlank
 import org.hsqldb.jdbc.JDBCDataSource
-import org.junit.Assert.fail
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.springframework.beans.factory.annotation.Autowired
@@ -36,24 +36,30 @@ import javax.validation.Payload
 import javax.validation.ReportAsSingleViolation
 import javax.validation.constraints.Null
 import javax.validation.constraints.Size
+import kotlin.coroutines.experimental.buildSequence
 import kotlin.reflect.KClass
 
 @RunWith(SpringRunner::class)
-@ContextConfiguration(classes = arrayOf(Config::class))
-@Transactional
+@ContextConfiguration
 open class DDLAutoGenerationTest {
     @Autowired lateinit var sessionFactory: SessionFactory
     val session by lazy { sessionFactory.openSession() }
 
-    @Test @Transactional(readOnly = true) open fun `column constraints were added`() {
-        assert(!isNullable("id"))
-        assert(!isNullable("nonnull"))
-        assert(isNullable("nullable"))
+    @Test open fun `column constraints was changed by hibernate-validator`() {
+        val required = tableColumnsNonNullConstraint("constraints")
+
+        assertTrue(required["not_blank"]!!)
     }
 
-    @Test(expected = ConstraintViolationException::class) @Transactional open fun `hibernate validator is enabled`() {
+    @Test open fun `column constraints were added as its column definition`() {
+        val required = tableColumnsNonNullConstraint("constraints")
+
+        assertTrue(required["id"]!!)
+        assertFalse(required["not_empty"]!!)
+    }
+
+    @Test(expected = ConstraintViolationException::class) @Transactional open fun `reports error when violate column constraints`() {
         val transaction = session.beginTransaction()
-        assert.that(transaction, present())
 
         //              can't be empty  ---v
         session.save(Constraints(1, "foo", ""))
@@ -61,18 +67,12 @@ open class DDLAutoGenerationTest {
         transaction.commit()
     }
 
-    private fun isNullable(columnName: String) = session.doReturningWork { it ->
-        it.metaData.getColumns(null, null, "CONSTRAINTS", null).use nullable@ {
-            while (it.next()) {
-                val column = it.getString("COLUMN_NAME")
-
-                if (column.equals(columnName, true)) {
-                    return@nullable it.getInt("NULLABLE") == 1
-                }
-            }
-
-            fail("COLUMN `$columnName` is not found!")
-            return@nullable false
+    private fun tableColumnsNonNullConstraint(table: String) = session.doReturningWork constraints@ { it ->
+        val ALL = null
+        return@constraints it.metaData.getColumns(ALL, ALL, table.toUpperCase(), ALL).use {
+            buildSequence {
+                while (it.next()) yield(it.getString("COLUMN_NAME").toLowerCase() to !it.getBoolean("NULLABLE"))
+            }.associateBy({ it.first }, { it.second })
         }
     }
 
@@ -89,12 +89,7 @@ open class DDLAutoGenerationTest {
             setDataSource(dataSource)
         }
 
-        @Bean open fun hsqldb(): JDBCDataSource {
-            return JDBCDataSource().apply {
-                logWriter = PrintWriter(StringWriter())
-                setUrl("jdbc:hsqldb:mem:test")
-            }
-        }
+        @Bean open fun hsqldb() = JDBCDataSource().apply { setUrl("jdbc:hsqldb:mem:test") }
 
         @Bean open fun transactionManager(@Autowired sessionFactory: SessionFactory) = HibernateTransactionManager(sessionFactory)
     }
@@ -104,11 +99,21 @@ open class DDLAutoGenerationTest {
 @Entity
 class Constraints(
         @Id val id: Int,
-        @field:[NullOrNotBlank Size(max = 50)] @Column(nullable = false) var nonnull: String,
-        @field:[NullOrNotBlank Size(max = 50)] @Column(nullable = true) var nullable: String? = null
+        @field:[NullOrNotBlank Size(max = 50)] @Column(nullable = true) var not_blank: String? = null,
+        @field:[NullOrLengthGT1 Size(max = 50)] @Column(nullable = true) var not_empty: String? = null
 )
 
 @[ConstraintComposition(OR) Length(min = 1) Null]
+@ReportAsSingleViolation
+@Constraint(validatedBy = emptyArray())
+annotation class NullOrLengthGT1(
+        val message: String = "{org.hibernate.validator.constraints.test.NullOrNotBlank.message}",
+        val groups: Array<KClass<*>> = emptyArray(),
+        val payload: Array<KClass<out Payload>> = emptyArray()
+)
+
+
+@[ConstraintComposition(OR) NotBlank Null]
 @ReportAsSingleViolation
 @Constraint(validatedBy = emptyArray())
 annotation class NullOrNotBlank(
