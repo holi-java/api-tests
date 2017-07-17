@@ -80,11 +80,11 @@ open class DDLAutoGenerationTest {
 
         @Bean open fun sessionFactory(@Autowired dataSource: DataSource) = LocalSessionFactoryBean().apply {
             setAnnotatedClasses(Constraints::class.java)
+            setDataSource(dataSource)
             hibernateProperties = Properties().apply {
                 setProperty(SHOW_SQL, "true")
                 setProperty(HBM2DDL_AUTO, "create-drop")
             }
-            setDataSource(dataSource)
         }
 
         @Bean open fun hsqldb() = JDBCDataSource().apply { setUrl("jdbc:hsqldb:mem:test") }
