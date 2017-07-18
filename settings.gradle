@@ -5,4 +5,4 @@ include ':testing'
 include ':rx-java2'
 include ':kotlin'
 include ':hibernate', ':hibernate:jpa'
-
+include ':kotlin-plugins', ':kotlin-plugins:allopen'

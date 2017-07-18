@@ -1,5 +1,6 @@
 ext {
     hamcrestLib = 'org.hamcrest:java-hamcrest:2.0.0.0'
+    servletApiLib = 'javax.servlet:javax.servlet-api:3.1.0'
 
     spring_version = '4.3.9.RELEASE'
     spring_boot_version = '1.5.4.RELEASE'
