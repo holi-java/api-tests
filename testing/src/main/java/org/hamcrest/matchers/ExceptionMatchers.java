@@ -1,7 +1,9 @@
 package org.hamcrest.matchers;
 
+import org.hamcrest.Description;
 import org.hamcrest.FeatureMatcher;
 import org.hamcrest.Matcher;
+import org.hamcrest.StringDescription;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
@@ -10,7 +12,6 @@ import java.util.stream.Stream;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singleton;
 import static java.util.stream.Collectors.toList;
-import static java.util.stream.Collectors.toSet;
 import static org.hamcrest.Matchers.*;
 
 public class ExceptionMatchers {
@@ -38,10 +39,16 @@ public class ExceptionMatchers {
             protected Throwable featureValueOf(ExceptionExpectation actual) {
                 try {
                     actual.run();
-                    return null;
                 } catch (Throwable e) {
                     return e;
                 }
+                throw new AssertionError(descriptionOfNoExceptionThrowing());
+            }
+
+            @NotNull
+            private Description descriptionOfNoExceptionThrowing() {
+                return new StringDescription().appendText("\nExpected: ").appendDescriptionOf(this)
+                        .appendText("\nbut: No Exception was thrown!");
             }
         };
     }
