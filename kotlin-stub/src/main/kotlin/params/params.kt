@@ -4,7 +4,7 @@ interface Param<out T> {
     fun <R> map(action: (T) -> R): R
 }
 
-@PublishedApi internal class Singleton<out T>(@Suppress("unused") val value: T) : Param<T> {
+@PublishedApi internal class Singleton<out T>(private val value: T) : Param<T> {
     override fun <R> map(action: (T) -> R) = action(value)
 }
 
