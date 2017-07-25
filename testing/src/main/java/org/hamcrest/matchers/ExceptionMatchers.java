@@ -1,10 +1,6 @@
 package org.hamcrest.matchers;
 
-import org.hamcrest.Description;
-import org.hamcrest.FeatureMatcher;
-import org.hamcrest.Matcher;
-import org.hamcrest.StringDescription;
-import org.jetbrains.annotations.NotNull;
+import org.hamcrest.*;
 
 import java.util.*;
 import java.util.stream.Stream;
@@ -34,24 +30,35 @@ public class ExceptionMatchers {
 
 
     private static Matcher<ExceptionExpectation> throwing(Collection<Matcher<? super Throwable>> matchers) {
-        return new FeatureMatcher<ExceptionExpectation, Throwable>(allOf(matchers), "throwing", "") {
+        return new TypeSafeDiagnosingMatcher<ExceptionExpectation>() {
+            Matcher<Throwable> exceptionMatcher = allOf(matchers);
+
             @Override
-            protected Throwable featureValueOf(ExceptionExpectation actual) {
+            protected boolean matchesSafely(ExceptionExpectation item, Description mismatch) {
                 try {
-                    actual.run();
-                } catch (Throwable e) {
-                    return e;
+                    item.run();
+                    mismatch.appendText("No exception is thrown!");
+                    return false;
+                } catch (Throwable ex) {
+                    return matchesThrownException(ex, mismatch);
                 }
-                throw new AssertionError(descriptionOfNoExceptionThrowing());
             }
 
-            @NotNull
-            private Description descriptionOfNoExceptionThrowing() {
-                return new StringDescription().appendText("\nExpected: ").appendDescriptionOf(this)
-                        .appendText("\nbut: No Exception was thrown!");
+            private boolean matchesThrownException(Throwable ex, Description mismatch) {
+                if (!exceptionMatcher.matches(ex)) {
+                    mismatch.appendValue(ex);
+                    return false;
+                }
+                return true;
+            }
+
+            @Override
+            public void describeTo(Description description) {
+                description.appendText("throwing ").appendDescriptionOf(exceptionMatcher);
             }
         };
     }
+
 
     public static Matcher<Throwable> withMessage(String message) {
         return withMessage(equalTo(message));
