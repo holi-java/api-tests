@@ -68,7 +68,6 @@ public class CyclicBarrierTest {
             Future<?> task = spawn(task(before::countDown).then(() -> barrier.await(100, MILLISECONDS)));
             assertTrue(before.await(100, MILLISECONDS));
 
-            assertThat(barrier.getNumberWaiting(), equalTo(1));
             assertThat(barrier.getParties(), equalTo(2));
             assertFalse(barrier.isBroken());
 

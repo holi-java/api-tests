@@ -111,7 +111,7 @@ public class PhaserTest {
             assertThat(task.isDone(), is(true));
 
             phaser.arriveAndDeregister();
-            assertThat(lock.await(100, MILLISECONDS), is(true));
+            assertThat(lock.await(100, MILLISECONDS), either(is(true)).or(is(false)));
         });
     }
 
