@@ -14,14 +14,19 @@ import static org.junit.internal.matchers.ThrowableMessageMatcher.hasMessage;
 public class KeyTest {
 
     @Test
-    public void internalKey() throws Throwable {
+    public void stringKeysAreSharedByKey() throws Throwable {
         String stringKey = "I100010";
-        Key key = Key.from(stringKey);
+
+        assertThat(Key.from(stringKey).toString(), sameInstance(stringKey));
+    }
+
+    @Test
+    public void internalKey() throws Throwable {
+        Key key = Key.from("I100010");
 
         assertThat(key.type(), equalTo('I'));
         assertThat(key.value(), equalTo("100010"));
         assertThat(key.isExternal(), is(false));
-        assertThat(key.toString(), sameInstance(stringKey));
     }
 
     @Test
