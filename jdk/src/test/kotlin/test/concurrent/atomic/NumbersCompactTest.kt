@@ -2,8 +2,10 @@ package test.concurrent.atomic
 
 import com.natpryce.hamkrest.assertion.assert
 import com.natpryce.hamkrest.equalTo
+import com.natpryce.hamkrest.has
 import com.natpryce.hamkrest.throws
 import org.junit.Test
+import java.util.*
 
 class NumbersCompactTest {
 
@@ -39,46 +41,43 @@ class NumbersCompactTest {
 
     @Test
     fun `throws exception for bad format  numbers`() {
-        assert.that({ arrayOf(1, 1).compact() }, throws<IllegalArgumentException>())
+        assert.that({ arrayOf(1, 1).compact() }, throws<IllegalArgumentException>(has("message", { it.message }, equalTo("Bad format: [1, 1]"))))
     }
 }
 
-fun Array<Int>.compact(): String {
-    return StringBuilder().also { compact(it) }.toString()
-}
+@Suppress("NOTHING_TO_INLINE")
+inline fun Array<Int>.compact() = StringBuilder().also { compact(it) }.toString()
 
-private fun Array<Int>.compact(out: Appendable): Unit {
-    validate().run {
-        if (size == 0) return
-        var end = get(0)
-        var start = end
+fun Array<Int>.compact(out: Appendable): Unit {
+    takeIf { valid() }?.run {
+        var prev = get(0)
+        var start = prev
 
-        for (i in 1 until size) {
-            val it = get(i)
-            if (end + 1 != it) {
-                out.compact(start, end).append(',')
+        for (i in 1 until size) prev = get(i).also {
+            if (prev + 1 != it) {
+                out.compact(start, prev).append(',')
                 start = it
             }
-            end = it
         }
-
-        out.compact(start, end)
+        out.compact(start, prev)
     }
 }
 
-private fun Array<Int>.validate(): Unit {
-    if (size < 2) return
+private fun Array<Int>.valid(): Boolean {
+    if (size == 0) return false
     var prev = get(0)
-    for (i in 1 until size) {
-        prev = get(i).takeIf { it > prev } ?: throw IllegalArgumentException()
-    }
+    for (i in 1 until size) prev = get(i).takeIf { it > prev } ?: throw IllegalArgumentException("Bad format: ${Arrays.toString(this)}")
+    return true;
 }
 
 private fun Appendable.compact(start: Int, end: Int) = append(start.toString()).also {
-    val sep = when (end - start) {
-        0 -> return this
+    separate(end - start) { append(it).append(end.toString()) }
+}
+
+private inline fun separate(distance: Int, block: (Char) -> Unit): Unit {
+    return block(when (distance) {
+        0 -> return
         1 -> ','
         else -> '-'
-    }
-    append(sep).append(end.toString())
+    })
 }
