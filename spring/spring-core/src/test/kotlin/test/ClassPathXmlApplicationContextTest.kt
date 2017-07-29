@@ -5,6 +5,8 @@ package test
 import com.natpryce.hamkrest.*
 import com.natpryce.hamkrest.assertion.assert
 import org.junit.Test
+import org.springframework.beans.factory.BeanCreationException
+import org.springframework.beans.factory.BeanCurrentlyInCreationException
 import org.springframework.beans.factory.NoSuchBeanDefinitionException
 import org.springframework.beans.factory.xml.XmlBeanDefinitionReader
 import org.springframework.context.support.ClassPathXmlApplicationContext
@@ -90,5 +92,12 @@ class ClassPathXmlApplicationContextTest {
         val bar = context.getBean("bar")
 
         assert.that(bar, equalTo<Any>("bar"))
+    }
+
+    @Test
+    fun `fails on circular-dependency injection`() {
+        val loadBeanDefinition: () -> Unit = { ClassPathXmlApplicationContext("circular-dependency.xml") }
+
+        assert.that(loadBeanDefinition, throws(isA<BeanCreationException>(has("cause", { it.cause!! }, isA<BeanCurrentlyInCreationException>()))))
     }
 }
