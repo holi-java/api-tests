@@ -15,12 +15,12 @@ public class KeyTest {
     public void stringKeysAreSharedByKey() throws Throwable {
         String stringKey = "I100010";
 
-        assertThat(StringKey.from(stringKey).toString(), sameInstance(stringKey));
+        assertThat(EncodedKey.from(stringKey).toString(), sameInstance(stringKey));
     }
 
     @Test
     public void internalKey() throws Throwable {
-        PrivateKey key = StringKey.from("I100010");
+        PrivateKey key = EncodedKey.from("I100010");
 
         assertThat(key.type(), equalTo('I'));
         assertThat(key.value(), equalTo("100010"));
@@ -29,7 +29,7 @@ public class KeyTest {
 
     @Test
     public void externalKey() throws Throwable {
-        PrivateKey key = StringKey.from("A100010");
+        PrivateKey key = EncodedKey.from("A100010");
 
         assertThat(key.type(), equalTo('A'));
         assertThat(key.value(), equalTo("100010"));
@@ -38,12 +38,12 @@ public class KeyTest {
 
     @Test
     public void invalidKey() throws Throwable {
-        assertThat(() -> StringKey.from("X100010"), throwing(InvalidKeyException.class, hasMessage(equalTo("Invalid key: \"X100010\""))));
+        assertThat(() -> EncodedKey.from("X100010"), throwing(InvalidKeyException.class, hasMessage(equalTo("Invalid key: \"X100010\""))));
     }
 
     @Test
     public void castAKeyToAPrivateKey() throws Throwable {
-        Key key = StringKey.from("A100010");
+        Key key = EncodedKey.from("A100010");
 
         PrivateKey privateKey = PrivateKey.from(key);
 
@@ -82,19 +82,19 @@ interface PrivateKey extends Key {
     }
 }
 
-class StringKey implements PrivateKey {
+class EncodedKey implements PrivateKey {
     private final String key;
     private final Visibility visibility;
 
     //      v--- make the Key constructor private.
-    private StringKey(String key, Visibility visibility) {
+    private EncodedKey(String key, Visibility visibility) {
         this.key = key;
         this.visibility = visibility;
     }
 
 
     public static PrivateKey from(String key) {
-        return new StringKey(key, visibilityOf(key));
+        return new EncodedKey(key, visibilityOf(key));
     }
 
     private static final BitSet externals = new BitSet();
