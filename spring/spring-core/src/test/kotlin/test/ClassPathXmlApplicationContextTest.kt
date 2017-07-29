@@ -114,4 +114,11 @@ class ClassPathXmlApplicationContextTest {
 
         assert.that(context.getBean("config"), equalTo<Any>(Optional.of(mapOf("foo" to "bar"))))
     }
+
+    @Test
+    fun `idref reference the spring bean's string ID`() {
+        val context = ClassPathXmlApplicationContext("idref.xml")
+
+        assert.that(context.getBean("foo"), equalTo<Any>("bar"))
+    }
 }
