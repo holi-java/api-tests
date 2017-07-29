@@ -82,4 +82,13 @@ class ClassPathXmlApplicationContextTest {
 
         assert.that(foo.get(), equalTo<Any>("bar"))
     }
+
+    @Test
+    fun `factory method`() {
+        val context = ClassPathXmlApplicationContext("factory-method.xml")
+
+        val bar = context.getBean("bar")
+
+        assert.that(bar, equalTo<Any>("bar"))
+    }
 }
