@@ -17,12 +17,12 @@ public class KeyTest {
     public void stringKeysAreSharedByKey() throws Throwable {
         String stringKey = "I100010";
 
-        assertThat(Key.from(stringKey).toString(), sameInstance(stringKey));
+        assertThat(StringKey.from(stringKey).toString(), sameInstance(stringKey));
     }
 
     @Test
     public void internalKey() throws Throwable {
-        Key key = Key.from("I100010");
+        PrivateKey key = StringKey.from("I100010");
 
         assertThat(key.type(), equalTo('I'));
         assertThat(key.value(), equalTo("100010"));
@@ -31,7 +31,7 @@ public class KeyTest {
 
     @Test
     public void externalKey() throws Throwable {
-        Key key = Key.from("A100010");
+        PrivateKey key = StringKey.from("A100010");
 
         assertThat(key.type(), equalTo('A'));
         assertThat(key.value(), equalTo("100010"));
@@ -40,24 +40,61 @@ public class KeyTest {
 
     @Test
     public void invalidKey() throws Throwable {
-        assertThat(() -> Key.from("X100010"), throwing(IllegalArgumentException.class, hasMessage(equalTo("Invalid Key: \"X100010\""))));
+        assertThat(() -> StringKey.from("X100010"), throwing(IllegalArgumentException.class, hasMessage(equalTo("Invalid Key: \"X100010\""))));
+    }
+
+    @Test
+    public void castAKeyToAPrivateKey() throws Throwable {
+        Key key = StringKey.from("A100010");
+
+        PrivateKey privateKey = PrivateKey.from(key);
+
+        assertThat(privateKey.isExternal(), is(true));
+        assertThat(privateKey.type(), equalTo('A'));
+    }
+
+    @Test
+    public void failsToCastACustomKeyToPrivateKey() throws Throwable {
+        Key key = () -> "custom key";
+
+        assertThat(() -> PrivateKey.from(key), throwing(IllegalArgumentException.class));
     }
 }
 
+/**
+ * Key expose to client
+ */
+interface Key {
+    String value();
+}
 
-class Key {
+/**
+ * PrivateKey is used internally
+ */
+interface PrivateKey extends Key {
+    char type();
+
+    boolean isExternal();
+
+    static PrivateKey from(Key key) {
+        if (key instanceof PrivateKey) return (PrivateKey) key;
+        throw new IllegalArgumentException("Invalid key: " + key);
+    }
+}
+
+class StringKey implements PrivateKey {
     private final String key;
     private final Visibility visibility;
 
     //      v--- make the Key constructor private.
-    private Key(String key, Visibility visibility) {
+    private StringKey(String key, Visibility visibility) {
         this.key = key;
         this.visibility = visibility;
     }
 
 
-    public static Key from(String key) {
-        return new Key(key, visibilityOf(key));
+    public static PrivateKey from(String key) {
+        return new StringKey(key, visibilityOf(key));
     }
 
     private static final BitSet externals = new BitSet();
