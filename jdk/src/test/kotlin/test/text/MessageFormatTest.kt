@@ -31,4 +31,19 @@ class MessageFormatTest {
     fun `escape char '`() {
         assert.that(format("'{0}", "ignored"), equalTo("{0}"))
     }
+
+    @Test
+    fun `parsing strings`() {
+        assert.that("foo".parse("{0}"), equalTo(listOf<Any>("foo")))
+        assert.that("1234".parse("{0}"), equalTo(listOf<Any>("1234")))
+    }
+
+    @Test
+    fun `parsing numbers`() {
+        assert.that("1234".parse("{0,number}"), equalTo(listOf<Any>(1234L)))
+        assert.that("1234.0".parse("{0,number}"), equalTo(listOf<Any>(1234L)))
+        assert.that("1234.123".parse("{0,number}"), equalTo(listOf<Any>(1234.123)))
+    }
 }
+
+fun String.parse(pattern: String) = MessageFormat(pattern).parse(this).toList()
