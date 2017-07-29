@@ -4,9 +4,7 @@ import org.junit.Test;
 
 import java.util.BitSet;
 
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.sameInstance;
+import static org.hamcrest.Matchers.*;
 import static org.hamcrest.matchers.ExceptionMatchers.throwing;
 import static org.junit.Assert.assertThat;
 import static org.junit.internal.matchers.ThrowableMessageMatcher.hasMessage;
@@ -40,7 +38,7 @@ public class KeyTest {
 
     @Test
     public void invalidKey() throws Throwable {
-        assertThat(() -> StringKey.from("X100010"), throwing(IllegalArgumentException.class, hasMessage(equalTo("Invalid Key: \"X100010\""))));
+        assertThat(() -> StringKey.from("X100010"), throwing(InvalidKeyException.class, hasMessage(equalTo("Invalid key: \"X100010\""))));
     }
 
     @Test
@@ -57,7 +55,7 @@ public class KeyTest {
     public void failsToCastACustomKeyToPrivateKey() throws Throwable {
         Key key = () -> "custom key";
 
-        assertThat(() -> PrivateKey.from(key), throwing(IllegalArgumentException.class));
+        assertThat(() -> PrivateKey.from(key), throwing(InvalidKeyException.class));
     }
 }
 
@@ -66,6 +64,8 @@ public class KeyTest {
  */
 interface Key {
     String value();
+
+    String toString();
 }
 
 /**
@@ -78,7 +78,7 @@ interface PrivateKey extends Key {
 
     static PrivateKey from(Key key) {
         if (key instanceof PrivateKey) return (PrivateKey) key;
-        throw new IllegalArgumentException("Invalid key: " + key);
+        throw new InvalidKeyException(key);
     }
 }
 
@@ -121,7 +121,7 @@ class StringKey implements PrivateKey {
     }
 
     private static Visibility failsOnInvalidKey(String key) {
-        throw new IllegalArgumentException("Invalid Key: \"" + key + "\"");
+        throw new InvalidKeyException(key);
     }
 
     public char type() {
@@ -147,3 +147,12 @@ class StringKey implements PrivateKey {
     }
 }
 
+class InvalidKeyException extends IllegalArgumentException {
+    public InvalidKeyException(Key key) {
+        this(key.toString());
+    }
+
+    public InvalidKeyException(String key) {
+        super("Invalid key: \"" + key + "\"");
+    }
+}
