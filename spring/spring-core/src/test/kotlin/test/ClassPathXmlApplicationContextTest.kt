@@ -121,4 +121,14 @@ class ClassPathXmlApplicationContextTest {
 
         assert.that(context.getBean("foo"), equalTo<Any>("bar"))
     }
+
+    @Test
+    fun `merge collections`() {
+        val context = ClassPathXmlApplicationContext("merge-collections.xml")
+
+        assert.that(context.getBean("parent"), equalTo<Any>(Flags(listOf(1))))
+        assert.that(context.getBean("child"), equalTo<Any>(Flags(listOf(1, 2))))
+    }
 }
+
+data class Flags(var flags: List<Int> = emptyList())
