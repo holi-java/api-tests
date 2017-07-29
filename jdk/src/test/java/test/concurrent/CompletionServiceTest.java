@@ -34,7 +34,7 @@ public class CompletionServiceTest {
 
     @Test(timeout = 300)
     public void producesResultsInParallelReliesOnTheExecutor() throws Throwable {
-        completionService.submit(delayed(200, () -> 1));
+        completionService.submit(delayed(100, () -> 1));
         completionService.submit(delayed(200, () -> 2));
 
         assertThat(take(), equalTo(1));
