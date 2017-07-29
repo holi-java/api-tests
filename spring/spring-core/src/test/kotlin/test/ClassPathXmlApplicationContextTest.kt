@@ -102,7 +102,7 @@ class ClassPathXmlApplicationContextTest {
     }
 
     @Test
-    fun `p-namespace`() {
+    fun `property namespace`() {
         val context = ClassPathXmlApplicationContext("p-namespace.xml")
 
         assert.that(context.getBean("date"), equalTo<Any>(Date(123)))
@@ -135,6 +135,14 @@ class ClassPathXmlApplicationContextTest {
         val context = ClassPathXmlApplicationContext("nulls.xml")
 
         assert.that(context.getBean("foo"), equalTo<Any>(Optional.empty<Any>()))
+    }
+
+    @Test
+    fun `constructor namespace`() {
+        val context = ClassPathXmlApplicationContext("c-namespace.xml")
+
+        assert.that(context.getBean("foo"), equalTo<Any>(Optional.of("bar")))
+        assert.that(context.getBean("flags"), equalTo<Any>(Flags(listOf(1, 2, 3))))
     }
 }
 
