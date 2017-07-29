@@ -100,4 +100,11 @@ class ClassPathXmlApplicationContextTest {
 
         assert.that(loadBeanDefinition, throws(isA<BeanCreationException>(has("cause", { it.cause!! }, isA<BeanCurrentlyInCreationException>()))))
     }
+
+    @Test
+    fun `p-namespace`() {
+        val context = ClassPathXmlApplicationContext("p-namespace.xml")
+
+        assert.that(context.getBean("date"), equalTo<Any>(Date(123)))
+    }
 }
