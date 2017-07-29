@@ -63,8 +63,14 @@ public class KeyTest {
  * Key expose to client
  */
 interface Key {
+    /**
+     * @return the {@code String} key value
+     */
     String value();
 
+    /**
+     * @return the original {@code String} key
+     */
     String toString();
 }
 
@@ -72,11 +78,22 @@ interface Key {
  * PrivateKey is used internally
  */
 interface PrivateKey extends Key {
+    /**
+     * @return return the type of a key.
+     */
     char type();
 
+    /**
+     * @return return <b>true</b> if the key is external, otherwise return <b>false</b>.
+     */
     boolean isExternal();
 
-    static PrivateKey from(Key key) {
+    /**
+     * @param key
+     * @return a {@link PrivateKey} if it is created by application.
+     * @throws InvalidKeyException if the key is created by user
+     */
+    static PrivateKey from(Key key) throws InvalidKeyException {
         if (key instanceof PrivateKey) return (PrivateKey) key;
         throw new InvalidKeyException(key);
     }
@@ -92,8 +109,13 @@ class EncodedKey implements PrivateKey {
         this.visibility = visibility;
     }
 
-
-    public static PrivateKey from(String key) {
+    /**
+     * @param key
+     * @return create a PrivateKey from a encoded {@code String} key.
+     * @throws InvalidKeyException  if the {@code String} key format is invalid
+     * @throws NullPointerException if the {@code String} key is null
+     */
+    public static PrivateKey from(String key) throws InvalidKeyException {
         return new EncodedKey(key, visibilityOf(key));
     }
 
@@ -104,7 +126,7 @@ class EncodedKey implements PrivateKey {
         externals.set('B');
     }
 
-    private static Visibility visibilityOf(String key) {
+    private static Visibility visibilityOf(String key) throws InvalidKeyException {
         //@formatter:off
         return isInternalKey(key) ? Visibility.INTERNAL
                                   : isExternalKey(key) ? Visibility.EXTERNAL
