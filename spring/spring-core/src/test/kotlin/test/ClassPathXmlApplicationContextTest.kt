@@ -129,6 +129,13 @@ class ClassPathXmlApplicationContextTest {
         assert.that(context.getBean("parent"), equalTo<Any>(Flags(listOf(1))))
         assert.that(context.getBean("child"), equalTo<Any>(Flags(listOf(1, 2))))
     }
+
+    @Test
+    fun `NULLs`() {
+        val context = ClassPathXmlApplicationContext("nulls.xml")
+
+        assert.that(context.getBean("foo"), equalTo<Any>(Optional.empty<Any>()))
+    }
 }
 
 data class Flags(var flags: List<Int> = emptyList())
