@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+    <!--suppress SpringBeanConstructorArgInspection -->
+    <bean id="config" class="java.util.Optional">
+        <constructor-arg type="java.lang.Object">
+            <value type="java.util.Properties">
+                foo = bar
+            </value>
+        </constructor-arg>
+    </bean>
+</beans>

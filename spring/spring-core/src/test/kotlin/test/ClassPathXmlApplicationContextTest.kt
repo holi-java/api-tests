@@ -107,4 +107,11 @@ class ClassPathXmlApplicationContextTest {
 
         assert.that(context.getBean("date"), equalTo<Any>(Date(123)))
     }
+
+    @Test
+    fun `properties`() {
+        val context = ClassPathXmlApplicationContext("properties.xml")
+
+        assert.that(context.getBean("config"), equalTo<Any>(Optional.of(mapOf("foo" to "bar"))))
+    }
 }
