@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+    <!--suppress SpringBeanConstructorArgInspection, SpringModelInspection -->
+    <!-- todo: how to fix the warnings reported by IDEA? -->
+    <bean id="foo" class="java.util.Optional" factory-method="of">
+        <!--             v~~~ use the upper bounded type here  -->
+        <constructor-arg type="java.lang.Object" value="bar"/>
+    </bean>
+</beans>

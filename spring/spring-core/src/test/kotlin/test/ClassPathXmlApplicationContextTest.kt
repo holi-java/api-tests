@@ -73,4 +73,13 @@ class ClassPathXmlApplicationContextTest {
         assert.that(value, equalTo("string"))
         assert.that(context.getBean("foo"), sameInstance<Any>(value))
     }
+
+    @Test
+    fun `static factory method`() {
+        val context = ClassPathXmlApplicationContext("static-factory-method.xml")
+
+        val foo = context.getBean("foo", Optional::class.java)
+
+        assert.that(foo.get(), equalTo<Any>("bar"))
+    }
 }
