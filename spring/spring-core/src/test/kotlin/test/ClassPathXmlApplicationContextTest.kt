@@ -5,6 +5,7 @@ package test
 import com.natpryce.hamkrest.*
 import com.natpryce.hamkrest.assertion.assert
 import org.junit.Test
+import org.springframework.beans.NullValueInNestedPathException
 import org.springframework.beans.factory.BeanCreationException
 import org.springframework.beans.factory.BeanCurrentlyInCreationException
 import org.springframework.beans.factory.NoSuchBeanDefinitionException
@@ -144,6 +145,17 @@ class ClassPathXmlApplicationContextTest {
         assert.that(context.getBean("foo"), equalTo<Any>(Optional.of("bar")))
         assert.that(context.getBean("flags"), equalTo<Any>(Flags(listOf(1, 2, 3))))
     }
+
+    @Test
+    fun `compound property names`() {
+        val context = ClassPathXmlApplicationContext("compound-property-names.xml")
+
+        assert.that({ context.getBean("bad") }, throws(isA<BeanCreationException>(has("cause", { it.cause!! }, isA<NullValueInNestedPathException>()))))
+        assert.that(context.getBean("user"), equalTo<Any>(User(Address("China"))))
+    }
 }
 
 data class Flags(var flags: List<Int> = emptyList())
+
+data class User(var address: Address? = Address())
+data class Address(var country: String = "USA")
