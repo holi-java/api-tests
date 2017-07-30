@@ -60,6 +60,18 @@ class BeanScopeTest {
         assert.that(context.getBean<String>("foo"), equalTo("bar"))
     }
 
+    @Test
+    fun `register custom scope in XML`() {
+        val context = spring("register-thread-scope.xml")
+
+
+        val scope = with(context.autowireCapableBeanFactory as ConfigurableBeanFactory) {
+            getRegisteredScope("thread")
+        }
+
+        assert.that(scope, isA<SimpleThreadScope>())
+    }
+
     private fun scope(scope: String) = spring(scope + "-scope.xml").run { { getBean<Date>("date") } }
 
 }
