@@ -3,7 +3,7 @@ package test
 
 data class Flags(var flags: List<Int> = emptyList())
 
-data class User(var address: Address = Address())
+data class User(var address: Address? = Address())
 open class Address(open var country: String = "USA") {
     override fun equals(other: Any?) = when {
         other === this -> true

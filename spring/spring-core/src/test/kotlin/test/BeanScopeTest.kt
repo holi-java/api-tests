@@ -43,8 +43,8 @@ class BeanScopeTest {
         val user by provider { context.getBean<User>("user") }
 
         assert.that(user, sameInstance(user))
-        assert.that(user.address.country, !sameInstance(user.address.country))
-        assert.that(user.address.country, equalTo(user.address.country))
+        assert.that(user.address!!.country, !sameInstance(user.address!!.country))
+        assert.that(user.address!!.country, equalTo(user.address!!.country))
     }
 
     private fun scope(scope: String) = spring(scope + "-scope.xml").run { { getBean<Date>("date") } }
