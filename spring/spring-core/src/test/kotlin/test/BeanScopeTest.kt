@@ -1,9 +1,11 @@
 package test
 
+import com.natpryce.hamkrest.*
 import com.natpryce.hamkrest.assertion.assert
-import com.natpryce.hamkrest.equalTo
-import com.natpryce.hamkrest.sameInstance
 import org.junit.Test
+import org.springframework.beans.factory.config.ConfigurableBeanFactory
+import org.springframework.beans.factory.config.Scope
+import org.springframework.context.support.SimpleThreadScope
 import java.util.*
 
 class BeanScopeTest {
@@ -47,7 +49,17 @@ class BeanScopeTest {
         assert.that(user.address!!.country, equalTo(user.address!!.country))
     }
 
+    @Test
+    fun `register custom scope programmatically`() {
+        val context = spring("thread-scope-bean.xml")
+
+        assert.that({ context.getBean<String>("foo") }, throws(isA<IllegalStateException>(has("message", { it.message!! }, containsSubstring("scope name 'thread'")))))
+
+        with(context.autowireCapableBeanFactory as ConfigurableBeanFactory) { registerScope("thread", SimpleThreadScope()) }
+
+        assert.that(context.getBean<String>("foo"), equalTo("bar"))
+    }
+
     private fun scope(scope: String) = spring(scope + "-scope.xml").run { { getBean<Date>("date") } }
 
 }
-
