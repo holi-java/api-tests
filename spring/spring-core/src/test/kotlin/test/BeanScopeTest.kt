@@ -9,9 +9,9 @@ import java.util.*
 class BeanScopeTest {
     @Test
     fun `singleton scope by default`() {
-        val now = scope("singleton")
+        val date = scope("singleton")
 
-        assert.that(now(), sameInstance(now()))
+        assert.that(date(), sameInstance(date()))
     }
 
     @Test
@@ -36,6 +36,18 @@ class BeanScopeTest {
         assert.that(user1.address, !sameInstance(user2.address))
     }
 
-    private fun scope(scope: String) = spring(scope + "-scope.xml").run { { getBean<Date>("now") } }
+    @Test
+    fun `make sure singleton bean return a new prototype bean each time by aop scoped-proxy`() {
+        val context = spring("inject-aop-proxy-prototype-to-singleton-bean.xml")
+
+        val user by provider { context.getBean<User>("user") }
+
+        assert.that(user, sameInstance(user))
+        assert.that(user.address.country, !sameInstance(user.address.country))
+        assert.that(user.address.country, equalTo(user.address.country))
+    }
+
+    private fun scope(scope: String) = spring(scope + "-scope.xml").run { { getBean<Date>("date") } }
+
 }
 
