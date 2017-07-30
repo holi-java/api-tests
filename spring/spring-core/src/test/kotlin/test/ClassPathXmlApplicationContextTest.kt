@@ -10,7 +10,6 @@ import org.springframework.beans.factory.BeanCreationException
 import org.springframework.beans.factory.BeanCurrentlyInCreationException
 import org.springframework.beans.factory.NoSuchBeanDefinitionException
 import org.springframework.beans.factory.xml.XmlBeanDefinitionReader
-import org.springframework.context.support.ClassPathXmlApplicationContext
 import org.springframework.context.support.GenericApplicationContext
 import java.util.*
 
@@ -18,20 +17,16 @@ class ClassPathXmlApplicationContextTest {
 
     @Test
     fun standalone() {
-        val context = ClassPathXmlApplicationContext("standalone.xml")
+        val context = spring("standalone.xml")
 
-        val foo = context.getBean("foo", Optional::class.java)
-
-        assert.that(foo.get(), equalTo<Any>("bar"))
+        assert.that(context.getBean<Optional<String>>("foo").get(), equalTo("bar"))
     }
 
     @Test
     fun `composing XML-based metadata configuration`() {
-        val context = ClassPathXmlApplicationContext("composing-xml-based-config.xml")
+        val context = spring("composing-xml-based-config.xml")
 
-        val foo = context.getBean("foo", Optional::class.java)
-
-        assert.that(foo.get(), equalTo<Any>("composed"))
+        assert.that(context.getBean<Optional<String>>("foo").get(), equalTo("composed"))
     }
 
     @Test
@@ -43,15 +38,14 @@ class ClassPathXmlApplicationContextTest {
             refresh()
         }
 
-        val foo = context.getBean("foo", Optional::class.java)
-        assert.that(foo.get(), equalTo<Any>("bar"))
+        assert.that(context.getBean<Optional<String>>("foo").get(), equalTo("bar"))
     }
 
     @Test
     fun `defines bean with multiple names`() {
-        val context = ClassPathXmlApplicationContext("bean-aliasing.xml")
+        val context = spring("bean-aliasing.xml")
 
-        val value = context.getBean("identifier", String::class.java)
+        val value = context.getBean<String>("identifier")
 
         assert.that(value, equalTo("string"))
         assert.that(context.getBean("foo"), sameInstance<Any>(value))
@@ -61,17 +55,17 @@ class ClassPathXmlApplicationContextTest {
 
     @Test
     fun `can't load bean without name`() {
-        val context = ClassPathXmlApplicationContext("bean-without-name.xml")
+        val context = spring("bean-without-name.xml")
 
-        assert.that({ context.getBean("string", String::class.java) }, throws(isA<NoSuchBeanDefinitionException>()))
+        assert.that({ context.getBean("string") }, throws(isA<NoSuchBeanDefinitionException>()))
     }
 
 
     @Test
     fun `aliasing bean out-of bean definition`() {
-        val context = ClassPathXmlApplicationContext("bean-aliasing-out-of-definition.xml")
+        val context = spring("bean-aliasing-out-of-definition.xml")
 
-        val value = context.getBean("identifier", String::class.java)
+        val value = context.getBean<String>("identifier")
 
         assert.that(value, equalTo("string"))
         assert.that(context.getBean("foo"), sameInstance<Any>(value))
@@ -79,87 +73,87 @@ class ClassPathXmlApplicationContextTest {
 
     @Test
     fun `static factory method`() {
-        val context = ClassPathXmlApplicationContext("static-factory-method.xml")
+        val context = spring("static-factory-method.xml")
 
-        val foo = context.getBean("foo", Optional::class.java)
+        val foo = context.getBean<Optional<String>>("foo")
 
-        assert.that(foo.get(), equalTo<Any>("bar"))
+        assert.that(foo.get(), equalTo("bar"))
     }
 
     @Test
     fun `factory method`() {
-        val context = ClassPathXmlApplicationContext("factory-method.xml")
+        val context = spring("factory-method.xml")
 
-        val bar = context.getBean("bar")
+        val bar = context.getBean<String>("bar")
 
-        assert.that(bar, equalTo<Any>("bar"))
+        assert.that(bar, equalTo("bar"))
     }
 
     @Test
     fun `fails on circular-dependency injection`() {
-        val loadBeanDefinition: () -> Unit = { ClassPathXmlApplicationContext("circular-dependency.xml") }
+        val loadBeanDefinition: () -> Unit = { spring("circular-dependency.xml") }
 
         assert.that(loadBeanDefinition, throws(isA<BeanCreationException>(has("cause", { it.cause!! }, isA<BeanCurrentlyInCreationException>()))))
     }
 
     @Test
     fun `property namespace`() {
-        val context = ClassPathXmlApplicationContext("p-namespace.xml")
+        val context = spring("p-namespace.xml")
 
-        assert.that(context.getBean("date"), equalTo<Any>(Date(123)))
+        assert.that(context.getBean<Date>("date").time, equalTo(123L))
     }
 
     @Test
     fun `properties`() {
-        val context = ClassPathXmlApplicationContext("properties.xml")
+        val context = spring("properties.xml")
 
-        assert.that(context.getBean("config"), equalTo<Any>(Optional.of(mapOf("foo" to "bar"))))
+        assert.that(context.getBean<Optional<Map<String, String>>>("config"), equalTo(Optional.of(mapOf("foo" to "bar"))))
     }
 
     @Test
     fun `idref reference the spring bean's string ID`() {
-        val context = ClassPathXmlApplicationContext("idref.xml")
+        val context = spring("idref.xml")
 
-        assert.that(context.getBean("foo"), equalTo<Any>("bar"))
+        assert.that(context.getBean<String>("foo"), equalTo("bar"))
     }
 
     @Test
     fun `merge collections`() {
-        val context = ClassPathXmlApplicationContext("merge-collections.xml")
+        val context = spring("merge-collections.xml")
 
-        assert.that(context.getBean("parent"), equalTo<Any>(Flags(listOf(1))))
-        assert.that(context.getBean("child"), equalTo<Any>(Flags(listOf(1, 2))))
+        assert.that(context.getBean<Flags>("parent"), equalTo(Flags(listOf(1))))
+        assert.that(context.getBean<Flags>("child"), equalTo(Flags(listOf(1, 2))))
     }
 
     @Test
     fun `NULLs`() {
-        val context = ClassPathXmlApplicationContext("nulls.xml")
+        val context = spring("nulls.xml")
 
-        assert.that(context.getBean("foo"), equalTo<Any>(Optional.empty<Any>()))
+        assert.that(context.getBean<Optional<Any>>("foo"), equalTo(Optional.empty<Any>()))
     }
 
     @Test
     fun `constructor namespace`() {
-        val context = ClassPathXmlApplicationContext("c-namespace.xml")
+        val context = spring("c-namespace.xml")
 
-        assert.that(context.getBean("foo"), equalTo<Any>(Optional.of("bar")))
-        assert.that(context.getBean("flags"), equalTo<Any>(Flags(listOf(1, 2, 3))))
+        assert.that(context.getBean<Optional<String>>("foo"), equalTo(Optional.of("bar")))
+        assert.that(context.getBean<Flags>("flags"), equalTo(Flags(listOf(1, 2, 3))))
     }
 
     @Test
     fun `compound property names`() {
-        val context = ClassPathXmlApplicationContext("compound-property-names.xml")
+        val context = spring("compound-property-names.xml")
 
         assert.that({ context.getBean("bad") }, throws(isA<BeanCreationException>(has("cause", { it.cause!! }, isA<NullValueInNestedPathException>()))))
-        assert.that(context.getBean("user"), equalTo<Any>(User(Address("China"))))
+        assert.that(context.getBean<User>("user"), equalTo(User(Address("China"))))
     }
 
     @Test
     fun `depends-on attribute`() {
-        val context = ClassPathXmlApplicationContext("depends-on-attribute.xml")
+        val context = spring("depends-on-attribute.xml")
 
-        assert.that(context.getBean("first"), equalTo<Any>(DependsOn(1)))
-        assert.that(context.getBean("second"), equalTo<Any>(DependsOn(2)))
+        assert.that(context.getBean<DependsOn>("first"), equalTo(DependsOn(1)))
+        assert.that(context.getBean<DependsOn>("second"), equalTo(DependsOn(2)))
     }
 }
 
