@@ -153,9 +153,24 @@ class ClassPathXmlApplicationContextTest {
         assert.that({ context.getBean("bad") }, throws(isA<BeanCreationException>(has("cause", { it.cause!! }, isA<NullValueInNestedPathException>()))))
         assert.that(context.getBean("user"), equalTo<Any>(User(Address("China"))))
     }
+
+    @Test
+    fun `depends-on attribute`() {
+        val context = ClassPathXmlApplicationContext("depends-on-attribute.xml")
+
+        assert.that(context.getBean("first"), equalTo<Any>(DependsOn(1)))
+        assert.that(context.getBean("second"), equalTo<Any>(DependsOn(2)))
+    }
 }
 
 data class Flags(var flags: List<Int> = emptyList())
 
 data class User(var address: Address? = Address())
 data class Address(var country: String = "USA")
+
+data class DependsOn(val order: Int = next()) {
+    private companion object OrderCounter {
+        private var counter: Int = 0
+        private fun next() = ++counter
+    }
+}
