@@ -40,9 +40,22 @@ class BeanLifecycleCallbacksTest {
     fun `enable spring lifecycle bean`() {
         val context = spring("spring-lifecycle-beans.xml")
 
+        context.start()
+
         assert.that(context.getBean<SpringLifecycleBean>("started").starts, equalTo(0))
         assert.that(context.getBean<SpringLifecycleBean>("new").starts, equalTo(1))
 
+    }
+
+    @Test
+    fun `stop spring lifecycle bean`() {
+        val context = spring("spring-lifecycle-beans.xml")
+        val it = context.getBean<SpringLifecycleBean>("started")
+        assert(!it.stoped)
+
+        context.stop()
+
+        assert(it.stoped)
     }
 }
 
@@ -60,17 +73,14 @@ open class LifecycleBean : InitializingBean {
 
 class SpringLifecycleBean(private var started: Boolean) : SmartLifecycle {
     var starts: Int = 0
-
+    @Volatile var stoped = false;
     override fun isRunning(): Boolean = started
-    override fun start() {
-        starts++
-    }
+    override fun start() = let { started = true }.also { starts++ }
+    override fun stop() = run { stoped = true }
 
-    override fun stop() = TODO()
-
-    override fun stop(callback: Runnable) = callback.run()
+    override fun stop(callback: Runnable) = callback.run().also { stop() }
 
     override fun isAutoStartup() = true
 
-    override fun getPhase() = 0
+    override fun getPhase() = 1
 }
