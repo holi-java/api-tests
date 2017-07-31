@@ -25,6 +25,15 @@ class BeanLifecycleCallbacksTest {
 
         assert.that(it.initializers, equalTo(listOf("@PostConstruct", "afterPropertiesSet")))
     }
+
+    @Test
+    fun `enable default init-method`() {
+        val context = spring("default-init-method.xml")
+
+        val it = context.getBean<LifecycleBean>("bean")
+
+        assert.that(it.initializers, equalTo(listOf("afterPropertiesSet", "init")))
+    }
 }
 
 open class LifecycleBean : InitializingBean {
