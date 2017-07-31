@@ -4,6 +4,7 @@ import com.natpryce.hamkrest.assertion.assert
 import com.natpryce.hamkrest.equalTo
 import org.junit.Test
 import org.springframework.beans.factory.InitializingBean
+import org.springframework.context.SmartLifecycle
 import javax.annotation.PostConstruct
 
 class BeanLifecycleCallbacksTest {
@@ -34,6 +35,15 @@ class BeanLifecycleCallbacksTest {
 
         assert.that(it.initializers, equalTo(listOf("afterPropertiesSet", "init")))
     }
+
+    @Test
+    fun `enable spring lifecycle bean`() {
+        val context = spring("spring-lifecycle-beans.xml")
+
+        assert.that(context.getBean<SpringLifecycleBean>("started").starts, equalTo(0))
+        assert.that(context.getBean<SpringLifecycleBean>("new").starts, equalTo(1))
+
+    }
 }
 
 open class LifecycleBean : InitializingBean {
@@ -46,4 +56,21 @@ open class LifecycleBean : InitializingBean {
     override fun afterPropertiesSet() = initializingBy("afterPropertiesSet")
 
     private fun initializingBy(initializer: String) = run { initializers += initializer }
+}
+
+class SpringLifecycleBean(private var started: Boolean) : SmartLifecycle {
+    var starts: Int = 0
+
+    override fun isRunning(): Boolean = started
+    override fun start() {
+        starts++
+    }
+
+    override fun stop() = TODO()
+
+    override fun stop(callback: Runnable) = callback.run()
+
+    override fun isAutoStartup() = true
+
+    override fun getPhase() = 0
 }
