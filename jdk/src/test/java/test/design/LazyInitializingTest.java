@@ -2,6 +2,8 @@ package test.design;
 
 import org.junit.Test;
 
+import java.util.Arrays;
+import java.util.Iterator;
 import java.util.function.Supplier;
 
 import static org.hamcrest.Matchers.sameInstance;
@@ -24,13 +26,37 @@ public class LazyInitializingTest {
         assertThat(foo::get, throwing(IllegalStateException.class));
     }
 
-    private <T> T fail() {
-        throw new IllegalStateException();
+    @Test
+    public void initializingNullValueOnce() throws Throwable {
+        Supplier<String> foo = lazy(provideAs(() -> null, this::fail));
+
+        assertThat(foo.get(), sameInstance(foo.get()));
     }
 
     private <T> Supplier<T> lazy(Supplier<T> provider) {
-        @SuppressWarnings("unchecked")
-        T[] value = (T[]) new Object[1];
-        return () -> value[0] != null ? value[0] : (value[0] = provider.get());
+        return new Supplier<T>() {
+            Supplier<T> delegate = () -> persisted(provider).get();
+
+            private Supplier<T> persisted(Supplier<T> target) {
+                T value = target.get();
+                return this.delegate = () -> value;
+            }
+
+            @Override
+            public T get() {
+                return delegate.get();
+            }
+        };
+    }
+
+    @SafeVarargs
+    private final Supplier<String> provideAs(Supplier<String>... suppliers) {
+        Iterator<Supplier<String>> providers = Arrays.asList(suppliers).iterator();
+
+        return () -> providers.next().get();
+    }
+
+    private <T> T fail() {
+        throw new IllegalStateException();
     }
 }
