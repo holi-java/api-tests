@@ -9,7 +9,7 @@ import javax.annotation.PostConstruct
 class BeanLifecycleCallbacksTest {
 
     @Test
-    fun `use custom callbacks instead`() {
+    fun `use custom callbacks instead & custom callbacks is called after afterPropertiesSet`() {
         val context = spring("custom-callbacks.xml")
 
         val it = context.getBean<LifecycleBean>("bean")
@@ -17,6 +17,14 @@ class BeanLifecycleCallbacksTest {
         assert.that(it.initializers, equalTo(listOf("afterPropertiesSet", "init")))
     }
 
+    @Test
+    fun `enable jsr-250 lifecycle annotations & jsr annotation is called before afterPropertiesSet`() {
+        val context = spring("jsr250-annotation-callbacks.xml")
+
+        val it = context.getBean<LifecycleBean>("bean")
+
+        assert.that(it.initializers, equalTo(listOf("@PostConstruct", "afterPropertiesSet")))
+    }
 }
 
 open class LifecycleBean : InitializingBean {
