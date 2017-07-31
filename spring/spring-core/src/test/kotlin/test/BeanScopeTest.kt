@@ -4,7 +4,6 @@ import com.natpryce.hamkrest.*
 import com.natpryce.hamkrest.assertion.assert
 import org.junit.Test
 import org.springframework.beans.factory.config.ConfigurableBeanFactory
-import org.springframework.beans.factory.config.Scope
 import org.springframework.context.support.SimpleThreadScope
 import java.util.*
 
