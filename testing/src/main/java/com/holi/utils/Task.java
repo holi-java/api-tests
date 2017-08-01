@@ -4,8 +4,8 @@ import java.util.concurrent.*;
 
 
 public interface Task {
-
-    ExecutorService EXECUTOR = Executors.newWorkStealingPool(20);
+    int POOL_SIZE = 20;
+    ExecutorService EXECUTOR = Executors.newWorkStealingPool(POOL_SIZE);
 
     static Task task(Task task) {
         return task;
