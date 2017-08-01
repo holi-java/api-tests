@@ -47,10 +47,10 @@ public class Suppliers {
     }
 
     @SafeVarargs
-    public static Supplier<String> provides(Supplier<String>... suppliers) {
-        Iterator<Supplier<String>> providers = Arrays.asList(suppliers).iterator();
+    public static Supplier<String> provides(Supplier<String>... providers) {
+        Iterator<Supplier<String>> generator = Arrays.asList(providers).iterator();
 
-        return () -> providers.next().get();
+        return () -> generator.next().get();
     }
 
 }
