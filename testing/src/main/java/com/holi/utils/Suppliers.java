@@ -12,10 +12,6 @@ public class Suppliers {
     private interface Lazily<T> extends Supplier<T> {/**/}
     //@formatter:on
 
-    public static <T> Supplier<T> lazy(Lock lock, Supplier<T> provider) {
-        return lazy(lock(lock, lazy(provider)));
-    }
-
     public static <T> Supplier<T> lazy(Supplier<T> provider) {
         if (requireNonNull(provider) instanceof Lazily) return provider;
 
@@ -32,6 +28,10 @@ public class Suppliers {
                 return delegate.get();
             }
         };
+    }
+
+    public static <T> Supplier<T> lazy(Lock lock, Supplier<T> provider) {
+        return lazy(lock(lock, lazy(provider)));
     }
 
     public static <T> Supplier<T> lock(Lock lock, Supplier<T> provider) {
