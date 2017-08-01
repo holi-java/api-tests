@@ -2,14 +2,13 @@ package test.design;
 
 import com.holi.utils.Task;
 import com.holi.utils.any;
-import org.jetbrains.annotations.NotNull;
 import org.junit.Test;
 
-import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
-import java.util.concurrent.*;
-import java.util.concurrent.locks.Lock;
+import java.util.concurrent.Callable;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -22,6 +21,8 @@ import static org.hamcrest.Matchers.sameInstance;
 import static org.hamcrest.matchers.ExceptionMatchers.throwing;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
+import static com.holi.utils.Suppliers.lazy;
+import static com.holi.utils.Suppliers.provides;
 
 public class LazyInitializingTest {
 
@@ -58,32 +59,11 @@ public class LazyInitializingTest {
         }
     }
 
-    private <T> Supplier<T> lazy(Lock lock, Supplier<T> provider) {
-        Supplier<T> lazily = lazy(provider);
-        return lazy(() -> {
-            lock.lock();
-            try {
-                return lazily.get();
-            } finally {
-                lock.unlock();
-            }
-        });
-    }
+    @Test
+    public void returnProviderImmediatelyIfLazied() throws Throwable {
+        Supplier<String> provider = lazy(() -> "bar");
 
-    private <T> Supplier<T> lazy(Supplier<T> provider) {
-        return new Supplier<T>() {
-            private Supplier<T> delegate = () -> persisted(provider).get();
-
-            private Supplier<T> persisted(Supplier<T> target) {
-                T value = target.get();
-                return this.delegate = () -> value;
-            }
-
-            @Override
-            public T get() {
-                return delegate.get();
-            }
-        };
+        assertThat(lazy(provider), sameInstance(provider));
     }
 
     private <T> List<Future<T>> spawn(int times, Callable<T> task) throws InterruptedException {
@@ -103,14 +83,8 @@ public class LazyInitializingTest {
         }
     }
 
-    @SafeVarargs
-    private final Supplier<String> provides(Supplier<String>... suppliers) {
-        Iterator<Supplier<String>> providers = Arrays.asList(suppliers).iterator();
-
-        return () -> providers.next().get();
-    }
-
     private <T> T fail() {
         throw new IllegalStateException();
     }
 }
+
