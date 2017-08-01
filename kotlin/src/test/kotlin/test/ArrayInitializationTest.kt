@@ -6,7 +6,6 @@ import com.natpryce.hamkrest.greaterThan
 import com.natpryce.hamkrest.hasSize
 import org.junit.Test
 import java.util.concurrent.Callable
-import java.util.concurrent.Executors
 import java.util.concurrent.ForkJoinPool
 
 class ArrayInitializationTest {
@@ -23,7 +22,7 @@ class ArrayInitializationTest {
 
     @Test
     fun `initializing in parallel`() {
-        val threads = Matrix2D(10, 3) { x, y -> Thread.currentThread() }.flatten().distinct()
+        val threads = Matrix2D(10, 3) { _, _ -> Thread.currentThread() }.flatten().distinct()
 
         assert.that(threads, hasSize(greaterThan(1)))
     }
