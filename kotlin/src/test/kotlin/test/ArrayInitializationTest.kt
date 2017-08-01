@@ -2,8 +2,11 @@ package test
 
 import com.natpryce.hamkrest.assertion.assert
 import com.natpryce.hamkrest.equalTo
+import com.natpryce.hamkrest.greaterThan
+import com.natpryce.hamkrest.hasSize
 import org.junit.Test
 import java.util.concurrent.Callable
+import java.util.concurrent.Executors
 import java.util.concurrent.ForkJoinPool
 
 class ArrayInitializationTest {
@@ -20,9 +23,9 @@ class ArrayInitializationTest {
 
     @Test
     fun `initializing in parallel`() {
-        val threads = Matrix2D(1, 3) { x, y -> Thread.currentThread() }.flatten()
+        val threads = Matrix2D(10, 3) { x, y -> Thread.currentThread() }.flatten().distinct()
 
-        assert.that(threads.size, equalTo(3))
+        assert.that(threads, hasSize(greaterThan(1)))
     }
 
     @Test
@@ -51,12 +54,11 @@ inline fun <reified T> Matrix2D(w: Int, h: Int, crossinline init: (Int, Int) -> 
 inline fun <T, reified R> Array<T>.toArray(transform: (T) -> R) =Array(size) { i -> transform(get(i)) }
 
 
+
 //                     v--- create array generator
-inline fun <reified T> generatorOf(size: Int, crossinline init: (Int) -> T) =
-        Array(size) { i ->
-            ForkJoinPool.commonPool().submit(Callable { init(i) })
-            //                         v--- return the lambda generator ()->T
-                                     .let { { it.get() } }
-        }
+inline fun <reified T> generatorOf(size: Int, crossinline init: (Int) -> T) = ForkJoinPool(20).let {
+    Array(size) { i -> it.submit(Callable { init(i) }).let { { it.get() } } }
+    //                      return the lambda generator ()->T  ---^
+}
 
 //@formatter:on
