@@ -27,14 +27,14 @@ class GeneratorTest {
 
     @Test
     fun `yield many`() {
-        val it = generate<Int> { yield(listOf(1, 2)); }
+        val it = generate { yieldAll(listOf(1, 2)); }
 
         assert.that(it.toList(), equalTo(listOf(1, 2)))
     }
 
     @Test
     fun `yield empty first`() {
-        val it = generate { yield(emptyList());yield(1) }
+        val it = generate { yieldAll(emptyList());yield(1) }
 
         assert.that(it.toList(), equalTo(listOf(1)))
     }
@@ -58,7 +58,7 @@ class GeneratorTest {
 
     @Test
     fun `has next`() {
-        val it = generate<Int> { yield(listOf(1)) }
+        val it = generate { yieldAll(listOf(1)) }
         assert(it.hasNext())
         assert(it.hasNext())
 
@@ -68,19 +68,17 @@ class GeneratorTest {
     }
 }
 
-fun <T> Iterator<T>.toList() = ArrayList<T>().also {
-    while (hasNext()) it += next()
-}
+fun <T> Iterator<T>.toList() = asSequence().toList()
 
 @RestrictsSuspension
 interface IteratorBuilder<in T> {
     suspend fun yield(value: T)
-    suspend fun yield(value: Collection<T>) {
+    suspend fun yieldAll(value: Collection<T>) {
         if (value.isEmpty()) return
-        yield(value as Iterable<T>)
+        yieldAll(value as Iterable<T>)
     }
 
-    suspend fun yield(value: Iterable<T>)
+    suspend fun yieldAll(value: Iterable<T>)
 }
 
 fun <T> generate(action: suspend IteratorBuilder<T>.() -> Unit): Iterator<T> {
@@ -99,9 +97,9 @@ fun <T> generate(action: suspend IteratorBuilder<T>.() -> Unit): Iterator<T> {
             else -> throw NoSuchElementException()
         }
 
-        suspend override fun yield(value: T) = yield(listOf(value))
+        suspend override fun yield(value: T) = yieldAll(listOf(value))
 
-        suspend override fun yield(value: Iterable<T>) {
+        suspend override fun yieldAll(value: Iterable<T>) {
             this.queue += value
             suspendCoroutine<Unit> { c ->
                 nextStep = c
