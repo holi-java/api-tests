@@ -71,7 +71,6 @@ class GeneratorTest {
 fun <T> Iterator<T>.toList() = asSequence().toList()
 
 
-
 fun <T> buildIterator(action: suspend IteratorBuilder<T>.() -> Unit): Iterator<T> {
     return object : Iterator<T>, IteratorBuilder<T>, Continuation<Unit> {
         override val context = EmptyCoroutineContext
@@ -90,8 +89,8 @@ fun <T> buildIterator(action: suspend IteratorBuilder<T>.() -> Unit): Iterator<T
 
         suspend override fun yield(value: T) = yieldAll(listOf(value))
 
-        suspend override fun yieldAll(value: Iterable<T>) {
-            this.queue += value
+        suspend override fun yieldAll(value: Iterator<T>) {
+            this.queue += Iterable { value }
             suspendCoroutine<Unit> { c ->
                 nextStep = c
             }
