@@ -13,35 +13,35 @@ class GeneratorTest {
 
     @Test
     fun singleton() {
-        val it = generate { yield(1) }
+        val it = buildIterator { yield(1) }
 
         assert.that(it.toList(), equalTo(listOf(1)))
     }
 
     @Test
     fun `many`() {
-        val it = generate { yield(1); yield(2) }
+        val it = buildIterator { yield(1); yield(2) }
 
         assert.that(it.toList(), equalTo(listOf(1, 2)))
     }
 
     @Test
     fun `yield many`() {
-        val it = generate { yieldAll(listOf(1, 2)); }
+        val it = buildIterator { yieldAll(listOf(1, 2)); }
 
         assert.that(it.toList(), equalTo(listOf(1, 2)))
     }
 
     @Test
     fun `yield empty first`() {
-        val it = generate { yieldAll(emptyList());yield(1) }
+        val it = buildIterator { yieldAll(emptyList());yield(1) }
 
         assert.that(it.toList(), equalTo(listOf(1)))
     }
 
     @Test
     fun `suspend the next subroutines`() {
-        val it = generate { yield(1); fail() }
+        val it = buildIterator { yield(1); fail() }
 
         assert.that(it.next(), equalTo(1))
         assert.that({ it.next() }, throws(isA<AssertionError>()))
@@ -50,7 +50,7 @@ class GeneratorTest {
 
     @Test
     fun `throws exception if no elements remaining`() {
-        val it = generate<Unit> { /**/ }.iterator()
+        val it = buildIterator<Unit> { /**/ }.iterator()
 
         assert.that({ it.next() }, throws(isA<NoSuchElementException>()))
     }
@@ -58,7 +58,7 @@ class GeneratorTest {
 
     @Test
     fun `has next`() {
-        val it = generate { yieldAll(listOf(1)) }
+        val it = buildIterator { yieldAll(listOf(1)) }
         assert(it.hasNext())
         assert(it.hasNext())
 
@@ -72,7 +72,7 @@ fun <T> Iterator<T>.toList() = asSequence().toList()
 
 
 
-fun <T> generate(action: suspend IteratorBuilder<T>.() -> Unit): Iterator<T> {
+fun <T> buildIterator(action: suspend IteratorBuilder<T>.() -> Unit): Iterator<T> {
     return object : Iterator<T>, IteratorBuilder<T>, Continuation<Unit> {
         override val context = EmptyCoroutineContext
         private val queue: Queue<T> = LinkedList<T>()
