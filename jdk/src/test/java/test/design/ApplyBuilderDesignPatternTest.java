@@ -61,9 +61,9 @@ interface MapBuilder<K, V> extends Builder<Map<K, V>> {
         return mapOf(HashMap::new);
     }
 
-    static <K, V> MapBuilder<K, V> mapOf(final Supplier<Map<K, V>> generator) {
+    static <K, V> MapBuilder<K, V> mapOf(final Supplier<Map<K, V>> provider) {
         return new MapBuilder<K, V>() {
-            private final Map<K, V> map = generator.get();
+            private final Map<K, V> map = provider.get();
 
             @Override
             public MapBuilder<K, V> with(K key, V value) {
