@@ -163,7 +163,7 @@ abstract class Optional<T> {
         return other.get();
     }
 
-    public void ifPresent(Consumer<? super T> action) {/**/}
+    public void ifPresent(Consumer<? super T> action) {/*ignore the action by default*/}
 
     public <E extends Throwable> T orElseThrow(Supplier<? extends E> exceptional) throws E {
         throw exceptional.get();
