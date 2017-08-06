@@ -144,6 +144,12 @@ public class ApplyingStatePatternTest {
             assertThat(present("foo"), not(equalTo(absent())));
             assertThat(present("foo"), not(equalTo("foo")));
         }
+
+        @Test
+        public void hash() throws Throwable {
+            assertThat(absent().hashCode(), equalTo(0));
+            assertThat(present("foo").hashCode(), equalTo("foo".hashCode()));
+        }
     }
 }
 
@@ -164,6 +170,10 @@ abstract class Optional<T> {
         @Override
         public <R> Optional<R> flatMap(Function<? super Object, ? extends Optional<R>> mapping) {
             return absent();
+        }
+
+        public int hashCode() {
+            return 0;
         }
 
         @Override
@@ -237,6 +247,11 @@ abstract class Optional<T> {
                 if (!getClass().isInstance(obj)) return false;
                 Optional<?> that = (Optional<?>) obj;
                 return value.equals(that.get());
+            }
+
+            @Override
+            public int hashCode() {
+                return value.hashCode();
             }
 
             @Override
