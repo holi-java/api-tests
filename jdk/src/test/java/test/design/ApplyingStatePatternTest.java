@@ -140,35 +140,6 @@ public class ApplyingStatePatternTest {
 
 @SuppressWarnings("WeakerAccess")
 abstract class Optional<T> {
-    private Optional() {/*sealed class*/}
-
-    public abstract Optional<T> filter(Predicate<? super T> predicate);
-
-    public abstract <R> Optional<R> map(Function<? super T, ? extends R> mapping);
-
-    public abstract <R> Optional<R> flatMap(Function<? super T, ? extends Optional<R>> mapping);
-
-    public T get() {
-        throw new NullPointerException();
-    }
-
-    public boolean isPresent() {
-        return false;
-    }
-
-    public T orElse(T other) {
-        return other;
-    }
-
-    public T orElseGet(Supplier<? extends T> other) {
-        return other.get();
-    }
-
-    public void ifPresent(Consumer<? super T> action) {/*ignore the action by default*/}
-
-    public <E extends Throwable> T orElseThrow(Supplier<? extends E> exceptional) throws E {
-        throw exceptional.get();
-    }
 
     private static final Optional<?> ABSENT = new Optional<Object>() {
         @Override
@@ -186,6 +157,8 @@ abstract class Optional<T> {
             return absent();
         }
     };
+
+    private Optional() {/*sealed class*/}
 
     public static <T> Optional<T> of(T result) {
         return result == null ? absent() : present(result);
@@ -245,5 +218,35 @@ abstract class Optional<T> {
             }
         };
     }
+
+    public abstract Optional<T> filter(Predicate<? super T> predicate);
+
+    public abstract <R> Optional<R> map(Function<? super T, ? extends R> mapping);
+
+    public abstract <R> Optional<R> flatMap(Function<? super T, ? extends Optional<R>> mapping);
+
+    public T get() {
+        throw new NullPointerException();
+    }
+
+    public boolean isPresent() {
+        return false;
+    }
+
+    public T orElse(T other) {
+        return other;
+    }
+
+    public T orElseGet(Supplier<? extends T> other) {
+        return other.get();
+    }
+
+    public void ifPresent(Consumer<? super T> action) {/*ignore the action by default*/}
+
+    public <E extends Throwable> T orElseThrow(Supplier<? extends E> exceptional) throws E {
+        throw exceptional.get();
+    }
+
+
 
 }
