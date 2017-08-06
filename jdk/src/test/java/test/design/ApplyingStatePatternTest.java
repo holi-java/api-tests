@@ -140,26 +140,26 @@ public class ApplyingStatePatternTest {
 
 }
 
-interface Optional<T> {
-    T get();
+abstract class Optional<T> {
+    public abstract T get();
 
-    boolean isPresent();
+    public abstract boolean isPresent();
 
-    Optional<T> filter(Predicate<T> predicate);
+    public abstract Optional<T> filter(Predicate<T> predicate);
 
-    <R> Optional<R> map(Function<T, R> mapping);
+    public abstract <R> Optional<R> map(Function<T, R> mapping);
 
-    <R> Optional<R> flatMap(Function<T, Optional<R>> mapping);
+    public abstract <R> Optional<R> flatMap(Function<T, Optional<R>> mapping);
 
-    T orElse(T other);
+    public abstract T orElse(T other);
 
-    T orElseGet(Supplier<T> other);
+    public abstract T orElseGet(Supplier<T> other);
 
-    void ifPresent(Consumer<T> action);
+    public abstract void ifPresent(Consumer<T> action);
 
-    <E extends Throwable> T orElseThrow(Supplier<? extends E> exceptional) throws E;
+    public abstract <E extends Throwable> T orElseThrow(Supplier<? extends E> exceptional) throws E;
 
-    Optional<?> ABSENT = new Optional<Object>() {
+    public static final Optional<?> ABSENT = new Optional<Object>() {
         @Override
         public Object get() {
             throw new NullPointerException();
@@ -206,16 +206,16 @@ interface Optional<T> {
         }
     };
 
-    static <T> Optional<T> of(T result) {
+    public static <T> Optional<T> of(T result) {
         return result == null ? absent() : present(result);
     }
 
     @SuppressWarnings("unchecked")
-    static <T> Optional<T> absent() {
+    public static <T> Optional<T> absent() {
         return (Optional<T>) ABSENT;
     }
 
-    static <T> Optional<T> present(T value) {
+    public static <T> Optional<T> present(T value) {
         requireNonNull(value);
         return new Optional<T>() {
             @Override
