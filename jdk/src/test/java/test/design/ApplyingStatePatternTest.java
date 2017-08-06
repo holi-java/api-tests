@@ -5,9 +5,7 @@ import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -143,11 +141,11 @@ public class ApplyingStatePatternTest {
 abstract class Optional<T> {
     private Optional() {/**/}
 
-    public abstract Optional<T> filter(Predicate<T> predicate);
+    public abstract Optional<T> filter(Predicate<? super T> predicate);
 
-    public abstract <R> Optional<R> map(Function<T, R> mapping);
+    public abstract <R> Optional<R> map(Function<? super T, ? extends R> mapping);
 
-    public abstract <R> Optional<R> flatMap(Function<T, Optional<R>> mapping);
+    public abstract <R> Optional<R> flatMap(Function<? super T, ? extends Optional<R>> mapping);
 
     public T get() {
         throw new NullPointerException();
@@ -161,11 +159,11 @@ abstract class Optional<T> {
         return other;
     }
 
-    public T orElseGet(Supplier<T> other) {
+    public T orElseGet(Supplier<? extends T> other) {
         return other.get();
     }
 
-    public void ifPresent(Consumer<T> action) {/**/}
+    public void ifPresent(Consumer<? super T> action) {/**/}
 
     public <E extends Throwable> T orElseThrow(Supplier<? extends E> exceptional) throws E {
         throw exceptional.get();
@@ -173,17 +171,17 @@ abstract class Optional<T> {
 
     private static final Optional<?> ABSENT = new Optional<Object>() {
         @Override
-        public Optional<Object> filter(Predicate<Object> predicate) {
+        public Optional<Object> filter(Predicate<? super Object> predicate) {
             return this;
         }
 
         @Override
-        public <R> Optional<R> map(Function<Object, R> mapping) {
+        public <R> Optional<R> map(Function<? super Object, ? extends R> mapping) {
             return absent();
         }
 
         @Override
-        public <R> Optional<R> flatMap(Function<Object, Optional<R>> mapping) {
+        public <R> Optional<R> flatMap(Function<? super Object, ? extends Optional<R>> mapping) {
             return absent();
         }
     };
@@ -211,17 +209,17 @@ abstract class Optional<T> {
             }
 
             @Override
-            public Optional<T> filter(Predicate<T> predicate) {
+            public Optional<T> filter(Predicate<? super T> predicate) {
                 return predicate.test(value) ? this : absent();
             }
 
             @Override
-            public <R> Optional<R> map(Function<T, R> mapping) {
+            public <R> Optional<R> map(Function<? super T, ? extends R> mapping) {
                 return of(mapping.apply(value));
             }
 
             @Override
-            public <R> Optional<R> flatMap(Function<T, Optional<R>> mapping) {
+            public <R> Optional<R> flatMap(Function<? super T, ? extends Optional<R>> mapping) {
                 return requireNonNull(mapping.apply(value));
             }
 
@@ -231,12 +229,12 @@ abstract class Optional<T> {
             }
 
             @Override
-            public T orElseGet(Supplier<T> other) {
+            public T orElseGet(Supplier<? extends T> other) {
                 return value;
             }
 
             @Override
-            public void ifPresent(Consumer<T> action) {
+            public void ifPresent(Consumer<? super T> action) {
                 action.accept(value);
             }
 
