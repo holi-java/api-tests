@@ -141,9 +141,7 @@ public class ApplyingStatePatternTest {
 }
 
 abstract class Optional<T> {
-    public abstract T get();
-
-    public abstract boolean isPresent();
+    private Optional() {/**/}
 
     public abstract Optional<T> filter(Predicate<T> predicate);
 
@@ -151,27 +149,29 @@ abstract class Optional<T> {
 
     public abstract <R> Optional<R> flatMap(Function<T, Optional<R>> mapping);
 
-    public abstract T orElse(T other);
+    public T get() {
+        throw new NullPointerException();
+    }
 
-    public abstract T orElseGet(Supplier<T> other);
+    public boolean isPresent() {
+        return false;
+    }
 
-    public abstract void ifPresent(Consumer<T> action);
+    public T orElse(T other) {
+        return other;
+    }
 
-    public abstract <E extends Throwable> T orElseThrow(Supplier<? extends E> exceptional) throws E;
+    public T orElseGet(Supplier<T> other) {
+        return other.get();
+    }
 
-    private Optional() {/**/}
+    public void ifPresent(Consumer<T> action) {/**/}
+
+    public <E extends Throwable> T orElseThrow(Supplier<? extends E> exceptional) throws E {
+        throw exceptional.get();
+    }
 
     private static final Optional<?> ABSENT = new Optional<Object>() {
-        @Override
-        public Object get() {
-            throw new NullPointerException();
-        }
-
-        @Override
-        public boolean isPresent() {
-            return false;
-        }
-
         @Override
         public Optional<Object> filter(Predicate<Object> predicate) {
             return this;
@@ -185,26 +185,6 @@ abstract class Optional<T> {
         @Override
         public <R> Optional<R> flatMap(Function<Object, Optional<R>> mapping) {
             return absent();
-        }
-
-        @Override
-        public Object orElse(Object other) {
-            return other;
-        }
-
-        @Override
-        public Object orElseGet(Supplier<Object> other) {
-            return other.get();
-        }
-
-        @Override
-        public void ifPresent(Consumer<Object> action) {
-
-        }
-
-        @Override
-        public <E extends Throwable> Object orElseThrow(Supplier<? extends E> exceptional) throws E {
-            throw exceptional.get();
         }
     };
 
