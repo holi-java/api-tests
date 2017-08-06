@@ -138,6 +138,7 @@ public class ApplyingStatePatternTest {
 
 }
 
+@SuppressWarnings("WeakerAccess")
 abstract class Optional<T> {
     private Optional() {/*sealed class*/}
 
