@@ -16,6 +16,7 @@ import static java.util.Objects.requireNonNull;
 import static org.hamcrest.Matchers.*;
 import static org.hamcrest.matchers.ExceptionMatchers.throwing;
 import static org.junit.Assert.assertThat;
+import static test.design.Optional.*;
 import static test.design.Optional.absent;
 
 @RunWith(Enclosed.class)
@@ -45,7 +46,7 @@ public class ApplyingStatePatternTest {
 
         @Test
         public void alwaysAbsentWhenFlatMapping() {
-            assertThat(absent.flatMap(it -> Optional.present("foo")), sameInstance(absent));
+            assertThat(absent.flatMap(it -> present("foo")), sameInstance(absent));
         }
 
         @Test
@@ -70,7 +71,7 @@ public class ApplyingStatePatternTest {
     }
 
     public static class WhenPresent {
-        private final Optional<String> present = Optional.present("foo");
+        private final Optional<String> present = present("foo");
 
         @Test
         public void getsTheRawValue() {
@@ -85,7 +86,7 @@ public class ApplyingStatePatternTest {
         @Test
         public void throwsNullPointerExceptionIfCreateAPresentOptionalWithNullValue() {
             //noinspection ResultOfMethodCallIgnored
-            assertThat(() -> Optional.present(null), throwing(NullPointerException.class));
+            assertThat(() -> present(null), throwing(NullPointerException.class));
         }
 
         @Test
@@ -135,7 +136,15 @@ public class ApplyingStatePatternTest {
         }
     }
 
-
+    public static class EqualityTest {
+        @Test
+        public void equality() throws Throwable {
+            assertThat(absent(), equalTo(absent()));
+            assertThat(present("foo"), equalTo(present("foo")));
+            assertThat(present("foo"), not(equalTo(absent())));
+            assertThat(present("foo"), not(equalTo("foo")));
+        }
+    }
 }
 
 @SuppressWarnings("WeakerAccess")
@@ -155,6 +164,11 @@ abstract class Optional<T> {
         @Override
         public <R> Optional<R> flatMap(Function<? super Object, ? extends Optional<R>> mapping) {
             return absent();
+        }
+
+        @Override
+        public String toString() {
+            return "absent";
         }
     };
 
@@ -216,6 +230,19 @@ abstract class Optional<T> {
             public <E extends Throwable> T orElseThrow(Supplier<? extends E> exceptional) throws E {
                 return value;
             }
+
+            @Override
+            public boolean equals(Object obj) {
+                if (this == obj) return true;
+                if (!getClass().isInstance(obj)) return false;
+                Optional<?> that = (Optional<?>) obj;
+                return value.equals(that.get());
+            }
+
+            @Override
+            public String toString() {
+                return "`" + value + "`";
+            }
         };
     }
 
@@ -246,7 +273,6 @@ abstract class Optional<T> {
     public <E extends Throwable> T orElseThrow(Supplier<? extends E> exceptional) throws E {
         throw exceptional.get();
     }
-
 
 
 }
