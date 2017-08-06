@@ -139,7 +139,7 @@ public class ApplyingStatePatternTest {
 }
 
 abstract class Optional<T> {
-    private Optional() {/**/}
+    private Optional() {/*sealed class*/}
 
     public abstract Optional<T> filter(Predicate<? super T> predicate);
 
