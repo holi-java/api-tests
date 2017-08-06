@@ -159,6 +159,8 @@ abstract class Optional<T> {
 
     public abstract <E extends Throwable> T orElseThrow(Supplier<? extends E> exceptional) throws E;
 
+    private Optional() {/**/}
+
     private static final Optional<?> ABSENT = new Optional<Object>() {
         @Override
         public Object get() {
