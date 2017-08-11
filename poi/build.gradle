@@ -1,0 +1,5 @@
+dependencies {
+    def poi_version = "3.16"
+    compile "org.apache.poi:poi:$poi_version"
+    compile "org.apache.poi:poi-ooxml:$poi_version"
+}
