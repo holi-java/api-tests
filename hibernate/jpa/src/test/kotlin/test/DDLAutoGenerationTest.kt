@@ -23,6 +23,7 @@ import org.springframework.test.context.ContextConfiguration
 import org.springframework.test.context.junit4.SpringRunner
 import org.springframework.transaction.annotation.EnableTransactionManagement
 import org.springframework.transaction.annotation.Transactional
+import test.DDLAutoGenerationTest.*
 import java.util.*
 import javax.persistence.Column
 import javax.persistence.Entity
@@ -38,7 +39,7 @@ import kotlin.coroutines.experimental.buildSequence
 import kotlin.reflect.KClass
 
 @RunWith(SpringRunner::class)
-@ContextConfiguration
+@ContextConfiguration(classes = [Config::class])
 open class DDLAutoGenerationTest {
     @Autowired lateinit var sessionFactory: SessionFactory
     val session by lazy { sessionFactory.openSession() }
@@ -56,7 +57,8 @@ open class DDLAutoGenerationTest {
         assertFalse(required["not_empty"]!!)
     }
 
-    @Test(expected = ConstraintViolationException::class) @Transactional open fun `reports error when violate column constraints`() {
+    @Test(expected = ConstraintViolationException::class)
+    @Transactional open fun `reports error when violate column constraints`() {
         val transaction = session.beginTransaction()
 
         //              can't be empty  ---v
