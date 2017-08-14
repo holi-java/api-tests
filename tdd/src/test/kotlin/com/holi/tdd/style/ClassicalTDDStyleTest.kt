@@ -10,7 +10,7 @@ import org.junit.Test
 
 private const val IPHONE = "iPhone"
 private const val M3 = "Mi 3"
-private val WAREHOUSE get() = Warehouse().apply { add(IPHONE, 5); add(M3, 5) }
+private val WAREHOUSE: Inventory get() = Warehouse().apply { add(IPHONE, 5); add(M3, 5) }
 
 class OrderTest {
     val warehouse = WAREHOUSE
