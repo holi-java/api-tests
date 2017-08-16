@@ -95,7 +95,7 @@ class Java8LocalDateConversion extends Conversion<LocalDate> {
 
     @Override
     public String getLogicalTypeName() {
-        return "date";
+        return LogicalTypes.date().getName();
     }
 
     @Override
