@@ -5,10 +5,9 @@ import org.apache.avro.LogicalType;
 import org.apache.avro.LogicalTypes;
 import org.apache.avro.Schema;
 import org.apache.avro.io.*;
-import org.apache.avro.specific.SpecificData;
-import org.apache.avro.specific.SpecificDatumReader;
-import org.apache.avro.specific.SpecificDatumWriter;
-import org.apache.avro.util.Utf8;
+import org.apache.avro.reflect.ReflectData;
+import org.apache.avro.reflect.ReflectDatumReader;
+import org.apache.avro.reflect.ReflectDatumWriter;
 import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
@@ -27,14 +26,9 @@ public class AvroTypesTest {
     public void basicTypes() throws Throwable {
         assertThat(copy(3, as(INT)), equalTo(3));
         assertThat(copy(true, as(BOOLEAN)), equalTo(true));
+        assertThat(copy("foo", as(STRING)), equalTo("foo"));
     }
 
-    @Test
-    public void strings() throws Throwable {
-        Utf8 foo = (Utf8) copy((CharSequence) "foo", as(STRING));
-
-        assertThat(foo.toString(), equalTo("foo"));
-    }
 
     @Test
     public void narrowLongToInt() throws Throwable {
@@ -62,16 +56,39 @@ public class AvroTypesTest {
     }
 
 
+    @Test
+    public void record() throws Throwable {
+        Record record = new Record(1, LocalDate.now());
+
+        //@formatter:off
+        Schema schema = schema("{" +
+            "namespace:test.avro, " +
+            "name: Record, " +
+            "type: record, " +
+            "fields:[" +
+                "{name:id, type:int}," +
+                "{name:createdAt, type:{type:int, logicalType:date}}" +
+            "]" +
+        "}");
+        //@formatter:on
+
+        assertThat(copy(record, schema), equalTo(record));
+    }
+
     private Schema as(Schema.Type type) {
         return Schema.create(type);
     }
 
-    private <T> T copy(T value, Schema schema) throws IOException {
+    private Schema schema(String schema) {
+        return new Schema.Parser().parse(schema.replaceAll("(\\w+(?:[.\\$]\\w+)?)", "\"$1\""));
+    }
+
+    private static <T> T copy(T value, Schema schema) throws IOException {
         return deserialize(serialize(value, schema), schema);
     }
 
-    private <T> byte[] serialize(T value, Schema schema) throws IOException {
-        DatumWriter<T> out = new SpecificDatumWriter<>(schema, data());
+    private static <T> byte[] serialize(T value, Schema schema) throws IOException {
+        DatumWriter<T> out = new ReflectDatumWriter<>(schema, data());
         ByteArrayOutputStream dest = new ByteArrayOutputStream();
 
         JsonEncoder encoder = EncoderFactory.get().jsonEncoder(schema, dest);
@@ -81,18 +98,40 @@ public class AvroTypesTest {
         return dest.toByteArray();
     }
 
-    private <T> T deserialize(byte[] source, Schema schema) throws IOException {
-        DatumReader<T> in = new SpecificDatumReader<>(schema, schema, data());
+    private static <T> T deserialize(byte[] source, Schema schema) throws IOException {
+        DatumReader<T> in = new ReflectDatumReader<>(schema, schema, data());
         return in.read(null, DecoderFactory.get().jsonDecoder(schema, new ByteArrayInputStream(source)));
     }
 
-    private SpecificData data() {
-        SpecificData it = new SpecificData();
-        it.addLogicalTypeConversion(new Java8LocalDateConversion());
-        return it;
+    private static ReflectData data() {
+        ReflectData data = new ReflectData();
+        data.addLogicalTypeConversion(new Java8LocalDateConversion());
+        return data;
     }
 
 }
+
+class Record {
+    private int id;
+    private LocalDate createdAt;
+
+    private Record() {
+    }
+
+    public Record(int id, LocalDate createdAt) {
+        this.id = id;
+        this.createdAt = createdAt;
+    }
+
+    public boolean equals(Object o) {
+        return equals((Record) o);
+    }
+
+    public boolean equals(Record that) {
+        return id == that.id && createdAt.equals(that.createdAt);
+    }
+}
+
 
 class Java8LocalDateConversion extends Conversion<LocalDate> {
     @Override
