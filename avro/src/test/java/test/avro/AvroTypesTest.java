@@ -8,6 +8,7 @@ import org.apache.avro.io.*;
 import org.apache.avro.specific.SpecificData;
 import org.apache.avro.specific.SpecificDatumReader;
 import org.apache.avro.specific.SpecificDatumWriter;
+import org.apache.avro.util.Utf8;
 import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
@@ -26,7 +27,13 @@ public class AvroTypesTest {
     public void basicTypes() throws Throwable {
         assertThat(copy(3, as(INT)), equalTo(3));
         assertThat(copy(true, as(BOOLEAN)), equalTo(true));
-        assertThat(String.valueOf(copy("foo", as(STRING))), equalTo("foo"));
+    }
+
+    @Test
+    public void strings() throws Throwable {
+        Utf8 foo = (Utf8) copy((CharSequence) "foo", as(STRING));
+
+        assertThat(foo.toString(), equalTo("foo"));
     }
 
     @Test
